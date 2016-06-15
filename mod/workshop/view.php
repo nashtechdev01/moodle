@@ -107,7 +107,12 @@ $userplan = new workshop_user_plan($workshop, $USER->id);
 
 echo $output->header();
 $userplanaccessibilitytitle = html_writer::tag('span', get_string('userplanaccessibilitytitle', 'workshop'), array('class' => 'accesshide'));
-echo $output->heading_with_help(format_string($workshop->name).$userplanaccessibilitytitle, 'userplan', 'workshop');
+foreach ($userplan->phases as $phase) {
+    if ($phase->active) {
+        $accessibilityphasetitle = html_writer::tag('span', $phase->title, array('class' => 'accesshide'));
+    }
+}
+echo $output->heading_with_help(format_string($workshop->name).$userplanaccessibilitytitle.$accessibilityphasetitle, 'userplan', 'workshop');
 echo $output->render($userplan);
 
 switch ($workshop->phase) {
