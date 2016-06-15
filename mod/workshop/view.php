@@ -112,7 +112,7 @@ foreach ($userplan->phases as $phase) {
         $accessibilityphasetitle = html_writer::tag('span', $phase->title, array('class' => 'accesshide'));
     }
 }
-echo $output->heading_with_help(format_string($workshop->name).$userplanaccessibilitytitle.$accessibilityphasetitle, 'userplan', 'workshop');
+echo $output->heading_with_help(format_string($workshop->name).$accessibilityphasetitle.$userplanaccessibilitytitle, 'userplan', 'workshop');
 echo $output->render($userplan);
 
 switch ($workshop->phase) {
