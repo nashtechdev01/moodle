@@ -52,7 +52,14 @@ class workshop_comments_assessment_form extends workshop_assessment_form {
         for ($i = 0; $i < $nodims; $i++) {
             // dimension header
             $dimtitle = get_string('dimensionnumber', 'workshopform_comments', $i+1);
-            $mform->addElement('header', 'dimensionhdr__idx_'.$i, $dimtitle);
+            //$mform->addElement('header', 'dimensionhdr__idx_'.$i, $dimtitle);
+            // hide legend element, add h element
+            $header = $mform->addElement('header', 'dimensionhdr__idx_'.$i, $dimtitle);
+            $renderer =& $this->_form->defaultRenderer();
+            $highlightheadertemplate = str_replace('ftoggler', 'ftoggler hide', $renderer->_headerTemplate);
+            $renderer->setElementTemplate($highlightheadertemplate , 'dimensionhdr__idx_'.$i);
+            $htitle = html_writer::tag('h4',$dimtitle,array('class'=>'ftoggler'));
+            $mform->addElement('html', $htitle);
 
             // dimension id
             $mform->addElement('hidden', 'dimensionid__idx_'.$i, $fields->{'dimensionid__idx_'.$i});
