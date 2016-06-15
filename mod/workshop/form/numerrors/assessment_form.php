@@ -78,7 +78,8 @@ class workshop_numerrors_assessment_form extends workshop_assessment_form {
 
             // comment
             $label = get_string('dimensioncomment', 'workshopform_numerrors');
-            $mform->addElement('textarea', 'peercomment__idx_' . $i, $label, array('cols' => 60, 'rows' => 5));
+            $commentlable = $label . html_writer::tag('span', $dimtitle, array('class' => 'accesshide'));
+            $mform->addElement('textarea', 'peercomment__idx_' . $i, $commentlable, array('cols' => 60, 'rows' => 5));
         }
         $this->set_data($current);
     }
