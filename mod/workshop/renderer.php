@@ -281,12 +281,51 @@ class mod_workshop_renderer extends plugin_renderer_base {
      * @return string html code to be displayed
      */
     protected function render_workshop_user_plan(workshop_user_plan $plan) {
+        foreach ($plan->phases as $phasecode => $phase) {
+            $o .= html_writer::start_tag('dl', array('class' => 'phase'));
+            $actions = '';
+            foreach ($phase->actions as $action) {
+                switch ($action->type) {
+                    case 'switchphase':
+                        $icon = 'i/marker';
+                        if ($phasecode == workshop::PHASE_ASSESSMENT
+                            and $plan->workshop->phase == workshop::PHASE_SUBMISSION
+                            and $plan->workshop->phaseswitchassessment) {
+                            $icon = 'i/scheduled';
+                        }
+                        $actions .= $this->output->action_icon($action->url, new pix_icon($icon, get_string('switchphase', 'workshop')));
+                        break;
+                }
+            }
+            if (!empty($actions)) {
+                $actions = $this->output->container($actions, 'actions');
+            }
+            $title = html_writer::tag('span', $phase->title);
+            $classes = 'phase' . $phasecode;
+            if ($phase->active) {
+                $classes .= ' active';
+            } else {
+                $classes .= ' nonactive';
+            }
+            $o .= html_writer::start_tag('dt', array('class' => $classes));
+            $o .= $this->output->container($title . $actions);
+            $o .= html_writer::start_tag('dd', array('class' => $classes. ' phasetasks'));
+            $o .= $this->helper_user_plan_tasks($phase->tasks);
+            $o .= html_writer::end_tag('dd');
+            $o .= html_writer::end_tag('dl');
+        }
+        $o = $this->output->container($o, 'userplan');
+      //  return $o;
+
+
         $table = new html_table();
         $table->attributes['class'] = 'userplan';
+        //done
         $table->head = array();
         $table->colclasses = array();
         $row = new html_table_row();
         $row->attributes['class'] = 'phasetasks';
+        //done
         foreach ($plan->phases as $phasecode => $phase) {
             $title = html_writer::tag('span', $phase->title);
             $actions = '';
@@ -306,6 +345,7 @@ class mod_workshop_renderer extends plugin_renderer_base {
             if (!empty($actions)) {
                 $actions = $this->output->container($actions, 'actions');
             }
+            //done
             $table->head[] = $this->output->container($title . $actions);
             $classes = 'phase' . $phasecode;
             if ($phase->active) {
@@ -320,7 +360,7 @@ class mod_workshop_renderer extends plugin_renderer_base {
         }
         $table->data = array($row);
 
-        return html_writer::table($table);
+        return $o . html_writer::table($table);
     }
 
     /**

@@ -245,7 +245,7 @@
     font-size: 80%;
     border: 1px solid #ddd;
 }
-
+/*delete*/
 .path-mod-workshop .userplan th {
     vertical-align: bottom;
     white-space: normal;
@@ -264,6 +264,7 @@
     background: #e7f1c3;
 }
 
+/*delete*/
 .path-mod-workshop .userplan td {
     width: 20%;
     vertical-align: top;
@@ -299,6 +300,7 @@
     background-color: #e7f1c3;
 }
 
+/*delete*/
 .path-mod-workshop .userplan th .actions {
     display: inline;
 }
