@@ -58,13 +58,12 @@ class workshop_accumulative_assessment_form extends workshop_assessment_form {
         for ($i = 0; $i < $nodims; $i++) {
             // dimension header
             $dimtitle = get_string('dimensionnumber', 'workshopform_accumulative', $i+1);
-            //$mform->addElement('header', 'dimensionhdr__idx_'.$i, $dimtitle);
-            // hide legend element, add h element
+            // Hide legend element, add h element.
             $header = $mform->addElement('header', 'dimensionhdr__idx_'.$i, $dimtitle);
             $renderer =& $this->_form->defaultRenderer();
             $hideheadertemplate = str_replace('ftoggler', 'ftoggler hide', $renderer->_headerTemplate);
             $renderer->setElementTemplate($hideheadertemplate , 'dimensionhdr__idx_'.$i);
-            $htitle = html_writer::tag('h4',$dimtitle,array('class'=>'ftoggler'));
+            $htitle = html_writer::tag('h4', $dimtitle, array('class' => 'ftoggler'));
             $mform->addElement('html', $htitle);
 
             // dimension id
