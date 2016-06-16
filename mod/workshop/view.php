@@ -106,7 +106,8 @@ $userplan = new workshop_user_plan($workshop, $USER->id);
 /// Output starts here
 
 echo $output->header();
-$userplanaccessibilitytitle = html_writer::tag('span', get_string('userplanaccessibilitytitle', 'workshop'), array('class' => 'accesshide'));
+$userplanaccessibilitytitle = html_writer::tag('span', get_string('userplanaccessibilitytitle', 'workshop'),
+    array('class' => 'accesshide'));
 echo $output->heading_with_help(format_string($workshop->name).$userplanaccessibilitytitle, 'userplan', 'workshop');
 echo $output->render($userplan);
 
