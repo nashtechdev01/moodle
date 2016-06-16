@@ -83,7 +83,6 @@ class workshop_accumulative_assessment_form extends workshop_assessment_form {
 
             // comment
             $label = get_string('dimensioncomment', 'workshopform_accumulative');
-            //$mform->addElement('editor', 'peercomment__idx_' . $i, $label, null, array('maxfiles' => 0));
             $commentlable = $label . html_writer::tag('span', $dimtitle, array('class' => 'accesshide'));
             $mform->addElement('textarea', 'peercomment__idx_' . $i, $commentlable, array('cols' => 60, 'rows' => 5));
         }
