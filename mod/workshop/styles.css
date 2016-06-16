@@ -247,15 +247,6 @@
     position: relative;
     overflow: hidden;
 }
-/*delete*/
-.path-mod-workshop .userplan th {
-    vertical-align: bottom;
-    white-space: normal;
-    color: #999;
-    border-top: 1px solid #ddd;
-    border-bottom: 1px solid #ddd;
-    padding: 3px;
-}
 
 .path-mod-workshop .userplan dt {
     vertical-align: bottom;
@@ -263,16 +254,6 @@
     color: #999;
     border-bottom: 1px solid #ddd;
     padding: 3px;
-}
-
-/*delete*/
-.path-mod-workshop .userplan th.active {
-    vertical-align: top;
-    color: black;
-    font-size: 140%;
-    border: 1px solid #ddd;
-    border-bottom: 0;
-    background: #e7f1c3;
 }
 
 .path-mod-workshop .userplan dt.active {
@@ -283,14 +264,6 @@
     border-bottom: 0;
     border-top: 0;
     background: #e7f1c3;
-}
-
-/*delete*/
-.path-mod-workshop .userplan td {
-    width: 20%;
-    vertical-align: top;
-    border-right: 1px solid #ddd;
-    background-color: #f5f5f5;
 }
 
 .path-mod-workshop .userplan dl {
@@ -308,16 +281,6 @@
     padding: 5px;
 }
 
-/*delete*/
-.path-mod-workshop .userplan td,
-.path-mod-workshop .userplan td a,
-.path-mod-workshop .userplan td a:link,
-.path-mod-workshop .userplan td a:hover,
-.path-mod-workshop .userplan td a:visited,
-.path-mod-workshop .userplan td a:active {
-    color: #999;
-}
-
 .path-mod-workshop .userplan dd,
 .path-mod-workshop .userplan dd a,
 .path-mod-workshop .userplan dd a:link,
@@ -325,16 +288,6 @@
 .path-mod-workshop .userplan dd a:visited,
 .path-mod-workshop .userplan dd a:active {
     color: #999;
-}
-
-/*delete*/
-.path-mod-workshop .userplan td.active,
-.path-mod-workshop .userplan td.active a,
-.path-mod-workshop .userplan td.active a:link,
-.path-mod-workshop .userplan td.active a:hover,
-.path-mod-workshop .userplan td.active a:visited,
-.path-mod-workshop .userplan td.active a:active {
-    color: black;
 }
 
 .path-mod-workshop .userplan dd.active,
@@ -346,20 +299,8 @@
     color: black;
 }
 
-/*delete*/
-.path-mod-workshop .userplan td.lastcol {
-    border-right: 0;
-}
-
 .path-mod-workshop .userplan dd.lastcol {
     border-right: 0;
-}
-
-/*delete*/
-.path-mod-workshop .userplan td.active {
-    border-left: 1px solid #ddd;
-    border-right: 1px solid #ddd;
-    background-color: #e7f1c3;
 }
 
 .path-mod-workshop .userplan dd.active {
@@ -368,25 +309,9 @@
     background-color: #e7f1c3;
 }
 
-/*delete*/
-.path-mod-workshop .userplan th .actions {
-    display: inline;
-}
-
 .path-mod-workshop .userplan dt .actions {
     display: inline;
 }
-
-/*delete*/
-.path-mod-workshop .userplan tr.phasetasks li {
-    background-image: url([[pix:mod_workshop|userplan/task-todo]]);
-    background-position: top left;
-    background-repeat: no-repeat;
-    list-style-type: none;
-    min-height: 16px;
-    margin: .3em 0;
-}
-
 
 .path-mod-workshop .userplan dd.phasetasks li {
     background-image: url([[pix:mod_workshop|userplan/task-todo]]);
@@ -396,47 +321,20 @@
     min-height: 16px;
 }
 
-/*delete*/
-.dir-rtl.path-mod-workshop .userplan tr.phasetasks li {
-    background-position: top right;
-}
-
 .dir-rtl.path-mod-workshop .userplan dd.phasetasks li {
     background-position: top right;
-}
-
-/*delete*/
-.path-mod-workshop .userplan tr.phasetasks li.completed {
-    background-image: url([[pix:mod_workshop|userplan/task-done]]);
 }
 
 .path-mod-workshop .userplan dd.phasetasks li.completed {
     background-image: url([[pix:mod_workshop|userplan/task-done]]);
 }
 
-/*delete*/
-.path-mod-workshop .userplan tr.phasetasks li.fail {
-    background-image: url([[pix:mod_workshop|userplan/task-fail]]);
-}
-
 .path-mod-workshop .userplan dd.phasetasks li.fail {
     background-image: url([[pix:mod_workshop|userplan/task-fail]]);
 }
 
-/*delete*/
-.path-mod-workshop .userplan tr.phasetasks li.info {
-    background-image: url([[pix:mod_workshop|userplan/task-info]]);
-}
-
 .path-mod-workshop .userplan dd.phasetasks li.info {
     background-image: url([[pix:mod_workshop|userplan/task-info]]);
-}
-
-/*delete*/
-.path-mod-workshop .userplan tr.phasetasks .tasks {
-    list-style:none;
-    margin: 3px;
-    padding: 0px;
 }
 
 .path-mod-workshop .userplan dd.phasetasks .tasks {
@@ -445,38 +343,17 @@
     padding: 0px;
 }
 
-/*delete*/
-.path-mod-workshop .userplan tr.phasetasks .title {
-    padding: 0px 10px 0px 20px;
-}
-
 .path-mod-workshop .userplan dd.phasetasks .title {
     padding: 0px 10px 0px 20px;
-}
-
-/*delete*/
-.dir-rtl.path-mod-workshop .userplan tr.phasetasks .title {
-    padding: 0px 20px 0px 10px;
 }
 
 .dir-rtl.path-mod-workshop .userplan dd.phasetasks .title {
     padding: 0px 20px 0px 10px;
 }
 
-/*delete*/
-.path-mod-workshop .userplan tr.phasetasks .details {
-    padding: 0px 10px 0px 25px;
-    font-size: 80%;
-}
-
 .path-mod-workshop .userplan dd.phasetasks .details {
     padding: 0px 10px 0px 25px;
     font-size: 80%;
-}
-
-/*delete*/
-.dir-rtl.path-mod-workshop .userplan tr.phasetasks .details {
-    padding: 0px 25px 0px 10px;
 }
 
 .dir-rtl.path-mod-workshop .userplan dd.phasetasks .details {

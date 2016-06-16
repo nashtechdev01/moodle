@@ -315,52 +315,7 @@ class mod_workshop_renderer extends plugin_renderer_base {
             $o .= html_writer::end_tag('dl');
         }
         $o = $this->output->container($o, 'userplan');
-      //  return $o;
-
-
-        $table = new html_table();
-        $table->attributes['class'] = 'userplan';
-        //done
-        $table->head = array();
-        $table->colclasses = array();
-        $row = new html_table_row();
-        $row->attributes['class'] = 'phasetasks';
-        //done
-        foreach ($plan->phases as $phasecode => $phase) {
-            $title = html_writer::tag('span', $phase->title);
-            $actions = '';
-            foreach ($phase->actions as $action) {
-                switch ($action->type) {
-                case 'switchphase':
-                    $icon = 'i/marker';
-                    if ($phasecode == workshop::PHASE_ASSESSMENT
-                            and $plan->workshop->phase == workshop::PHASE_SUBMISSION
-                            and $plan->workshop->phaseswitchassessment) {
-                        $icon = 'i/scheduled';
-                    }
-                    $actions .= $this->output->action_icon($action->url, new pix_icon($icon, get_string('switchphase', 'workshop')));
-                    break;
-                }
-            }
-            if (!empty($actions)) {
-                $actions = $this->output->container($actions, 'actions');
-            }
-            //done
-            $table->head[] = $this->output->container($title . $actions);
-            $classes = 'phase' . $phasecode;
-            if ($phase->active) {
-                $classes .= ' active';
-            } else {
-                $classes .= ' nonactive';
-            }
-            $table->colclasses[] = $classes;
-            $cell = new html_table_cell();
-            $cell->text = $this->helper_user_plan_tasks($phase->tasks);
-            $row->cells[] = $cell;
-        }
-        $table->data = array($row);
-
-        return $o . html_writer::table($table);
+        return $o;
     }
 
     /**
