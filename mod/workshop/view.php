@@ -109,6 +109,12 @@ echo $output->header();
 $userplanaccessibilitytitle = html_writer::tag('span', get_string('userplanaccessibilitytitle', 'workshop'),
     array('class' => 'accesshide'));
 echo $output->heading_with_help(format_string($workshop->name).$userplanaccessibilitytitle, 'userplan', 'workshop');
+foreach ($userplan->phases as $phase) {
+    if ($phase->active) {
+        $currentphasetitle = $phase->title;
+    }
+}
+echo $output->heading($currentphasetitle, $level = 3);
 echo $output->render($userplan);
 
 switch ($workshop->phase) {
