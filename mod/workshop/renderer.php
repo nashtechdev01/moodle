@@ -293,7 +293,8 @@ class mod_workshop_renderer extends plugin_renderer_base {
                             and $plan->workshop->phaseswitchassessment) {
                             $icon = 'i/scheduled';
                         }
-                        $actions .= $this->output->action_icon($action->url, new pix_icon($icon, get_string('switchphase', 'workshop')));
+                        $actions .= $this->output->action_icon($action->url,
+                            new pix_icon($icon, get_string('switchphase', 'workshop')));
                         break;
                 }
             }
