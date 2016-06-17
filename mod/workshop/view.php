@@ -107,6 +107,12 @@ $userplan = new workshop_user_plan($workshop, $USER->id);
 
 echo $output->header();
 echo $output->heading_with_help(format_string($workshop->name), 'userplan', 'workshop');
+foreach ($userplan->phases as $phase) {
+    if ($phase->active) {
+        $currentphasetitle = $phase->title;
+    }
+}
+echo $output->heading($currentphasetitle, $level = 3);
 echo $output->render($userplan);
 
 switch ($workshop->phase) {
