@@ -305,6 +305,8 @@ class mod_workshop_renderer extends plugin_renderer_base {
             $classes = 'phase' . $phasecode;
             if ($phase->active) {
                 $classes .= ' active';
+                $title .= html_writer::tag('span', get_string('activephaseuserplantable', 'workshop'),
+                    array('class' => 'accesshide'));
             } else {
                 $classes .= ' nonactive';
             }
