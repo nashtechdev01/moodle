@@ -106,12 +106,7 @@ $userplan = new workshop_user_plan($workshop, $USER->id);
 /// Output starts here
 
 echo $output->header();
-foreach ($userplan->phases as $phase) {
-    if ($phase->active) {
-        $accessibilityphasetitle = html_writer::tag('span', $phase->title, array('class' => 'accesshide'));
-    }
-}
-echo $output->heading_with_help(format_string($workshop->name).$accessibilityphasetitle, 'userplan', 'workshop');
+echo $output->heading_with_help(format_string($workshop->name), 'userplan', 'workshop');
 echo $output->render($userplan);
 
 switch ($workshop->phase) {
