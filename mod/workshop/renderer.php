@@ -861,6 +861,20 @@ class mod_workshop_renderer extends plugin_renderer_base {
 
         $outputimgs     = '';   // images to be displayed inline
         $outputfiles    = '';   // list of attachment files
+        $outputexportbutton    = '';
+
+        //locnguyen - add portfolio button
+
+        $button = new portfolio_add_button();
+        $button->set_callback_options('workshop_portfolio_caller', array('submissionid' => $submissionid,'cmid' => $this->page->cm->id), 'mod_workshop');
+        //if (empty($attachments)) {
+        //    $button->set_formats(PORTFOLIO_FORMAT_PLAINHTML);
+        //} else {
+        $button->set_formats(PORTFOLIO_FORMAT_RICHHTML);
+        //}
+        //$button->render($displayformat, $addstr);
+
+        $outputexportbutton = $button->to_html(PORTFOLIO_ADD_ICON_LINK);
 
         foreach ($files as $file) {
             if ($file->is_directory()) {
@@ -912,10 +926,10 @@ class mod_workshop_renderer extends plugin_renderer_base {
                 $outputfiles = html_writer::tag('ul', $outputfiles, array('class' => 'files'));
             }
 
-            return $this->output->container($outputimgs . $outputfiles, 'attachments');
+            return $this->output->container($outputimgs . $outputfiles . $outputexportbutton, 'attachments');
 
         } else {
-            return $outputfiles;
+            return $outputfiles . $outputexportbutton;
         }
     }
 

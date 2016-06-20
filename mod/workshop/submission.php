@@ -95,6 +95,12 @@ $deletable      = $candeleteall;
 $ispublished    = ($workshop->phase == workshop::PHASE_CLOSED
                     and $submission->published == 1
                     and has_capability('mod/workshop:viewpublishedsubmissions', $workshop->context));
+//locnguyen
+$context = context_module::instance($cm->id);
+$canexportsubmission = !empty($CFG->enableportfolios) && (has_capability('mod/workshop:exportsubmission', $workshop->context));
+if($canexportsubmission){
+    require_once($CFG->libdir.'/portfoliolib.php');
+}
 
 if (empty($submission->id) and !$workshop->creating_submission_allowed($USER->id)) {
     $editable = false;
@@ -386,6 +392,20 @@ if (!$delete) {
         $url = new moodle_url($PAGE->url, array('assess' => 1));
         echo $output->single_button($url, get_string('assess', 'workshop'), 'post');
     }
+    //locnguyen - add portfolio button
+    if($canexportsubmission) {
+        $button = new portfolio_add_button();
+        $button->set_callback_options('workshop_portfolio_caller', array('submissionid' => $submission->id,'cmid' => $cmid), 'mod_workshop');
+        //if (empty($attachments)) {
+        //    $button->set_formats(PORTFOLIO_FORMAT_PLAINHTML);
+        //} else {
+        $button->set_formats(PORTFOLIO_FORMAT_RICHHTML);
+        //}
+        //$button->render($displayformat, $addstr);
+        echo html_writer::start_tag('div', array('class' => 'singlebutton'));
+        echo $button->to_html(PORTFOLIO_ADD_FULL_FORM, 'Export to portfolio');
+        echo html_writer::end_tag('div');
+    }
 }
 
 if (($workshop->phase == workshop::PHASE_CLOSED) and ($ownsubmission or $canviewall)) {
@@ -419,8 +439,21 @@ if ($isreviewer) {
     if ($canoverride) {
         $assessment->add_action($workshop->assess_url($assessment->id), get_string('assessmentsettings', 'workshop'));
     }
-
     echo $output->render($assessment);
+    //locnguyen - add portfolio button
+    if($canexportsubmission) {
+        $button = new portfolio_add_button();
+        $button->set_callback_options('workshop_portfolio_caller', array('submissionid' => $submission->id,'cmid' => $cmid), 'mod_workshop');
+        //if (empty($attachments)) {
+        //    $button->set_formats(PORTFOLIO_FORMAT_PLAINHTML);
+        //} else {
+        $button->set_formats(PORTFOLIO_FORMAT_RICHHTML);
+        //}
+        //$button->render($displayformat, $addstr);
+        echo html_writer::start_tag('div', array('class' => 'singlebutton'));
+        echo $button->to_html(PORTFOLIO_ADD_FULL_FORM, 'Export assessment');
+        echo html_writer::end_tag('div');
+    }
 
     if ($workshop->phase == workshop::PHASE_CLOSED) {
         if (strlen(trim($userassessment->feedbackreviewer)) > 0) {

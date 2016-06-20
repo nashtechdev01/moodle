@@ -244,4 +244,18 @@ $capabilities = array(
             'manager' => CAP_ALLOW
         )
     ),
+
+    //locnguyen
+    // Ability to export to portfolio of discussion and assessment
+    // Reviewers without this capability can not export discussion and assessment
+    'mod/workshop:exportsubmission' => array(
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array(
+            'student' => CAP_ALLOW,
+            'teacher' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW
+        )
+    ),
 );

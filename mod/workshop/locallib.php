@@ -32,6 +32,7 @@ defined('MOODLE_INTERNAL') || die();
 require_once(dirname(__FILE__).'/lib.php');     // we extend this library here
 require_once($CFG->libdir . '/gradelib.php');   // we use some rounding and comparing routines here
 require_once($CFG->libdir . '/filelib.php');
+require_once($CFG->libdir . '/portfolio/caller.php');
 
 /**
  * Full-featured workshop API
@@ -4059,7 +4060,7 @@ class workshop_feedback_author extends workshop_feedback implements renderable {
     }
 }
 
-
+//locnguyen
 /**
  * Renderable feedback for the reviewer
  */
@@ -4089,4 +4090,146 @@ class workshop_final_grades implements renderable {
 
     /** @var object the infor from the gradebook about the grade for assessment */
     public $assessmentgrade = null;
+}
+
+/**
+ * @package    mod_workshop
+ * @copyright  2009 David Mudrak <david.mudrak@gmail.com>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class workshop_portfolio_caller extends portfolio_module_caller_base {
+    protected $submissionid;
+    protected $cmid;
+    protected $attachment;
+
+    private $submission;
+
+    /**
+     * @return array
+     */
+    public static function expected_callbackargs() {
+        return array(
+            'submissionid' => false,
+            'cmid' => false,
+            'attachment' => false,
+        );
+    }
+
+    /**
+     * @global object
+     */
+    public function load_data() {
+        global $DB;
+        if (!$this->submission = $DB->get_record('workshop_submissions', array('id' => $this->submissionid))) {
+            throw new portfolio_caller_exception('invalidsubmissionid', 'workshop');
+        }
+        if (!$this->cm = get_coursemodule_from_instance('workshop', $this->submission->workshopid)) {
+            throw new portfolio_caller_exception('invalidcoursemodule');
+        }
+        //$this->set_file_and_format_data($this->attachment); // sets $this->singlefile for us
+    }
+
+    function prepare_package() {
+        return "hello";
+    }
+
+    function expected_time() {
+
+    }
+
+    /**
+     * @uses CONTEXT_MODULE
+     * @return bool
+     */
+    function check_permissions() {
+        $context = context_module::instance($this->cmid);
+//        if ($this->post) {
+//            return (has_capability('mod/forum:exportpost', $context)
+//                || ($this->post->userid == $this->user->id
+//                    && has_capability('mod/worksoh:exportownpost', $context)));
+//        }
+        return has_capability('mod/workshop:exportsubmission', $context);
+    }
+
+    function get_sha1() {
+
+    }
+
+    /**
+     * this is a function to output submission
+     *
+     * @global object
+     * @param int $post
+     * @return string
+     */
+    private function prepare_post($post, $fileoutputextras=null) {
+        global $DB;
+
+        $DB->set_debug(true);
+
+//        static $users;
+//        if (empty($users)) {
+//            $users = array($this->user->id => $this->user);
+//        }
+//        if (!array_key_exists($post->userid, $users)) {
+//            $users[$post->userid] = $DB->get_record('user', array('id' => $post->userid));
+//        }
+//        // add the user object on to the post so we can pass it to the leap writer if necessary
+//        $post->author = $users[$post->userid];
+//        $viewfullnames = true;
+//        // format the post body
+//        $options = portfolio_format_text_options();
+//        $format = $this->get('exporter')->get('format');
+//        $formattedtext = format_text($post->message, $post->messageformat, $options, $this->get('course')->id);
+//        $formattedtext = portfolio_rewrite_pluginfile_urls($formattedtext, $this->modcontext->id, 'mod_forum', 'post', $post->id, $format);
+//
+//        $output = '<table border="0" cellpadding="3" cellspacing="0" class="forumpost">';
+//
+//        $output .= '<tr class="header"><td>';// can't print picture.
+//        $output .= '</td>';
+//
+//        if ($post->parent) {
+//            $output .= '<td class="topic">';
+//        } else {
+//            $output .= '<td class="topic starter">';
+//        }
+//        $output .= '<div class="subject">'.format_string($post->subject).'</div>';
+//
+//        $fullname = fullname($users[$post->userid], $viewfullnames);
+//        $by = new stdClass();
+//        $by->name = $fullname;
+//        $by->date = userdate($post->modified, '', core_date::get_user_timezone($this->user));
+//        $output .= '<div class="author">'.get_string('bynameondate', 'forum', $by).'</div>';
+//
+//        $output .= '</td></tr>';
+//
+//        $output .= '<tr><td class="left side" valign="top">';
+//
+//        $output .= '</td><td class="content">';
+//
+//        $output .= $formattedtext;
+//
+//        if (is_array($this->keyedfiles) && array_key_exists($post->id, $this->keyedfiles) && is_array($this->keyedfiles[$post->id]) && count($this->keyedfiles[$post->id]) > 0) {
+//            $output .= '<div class="attachments">';
+//            $output .= '<br /><b>' .  get_string('attachments', 'forum') . '</b>:<br /><br />';
+//            foreach ($this->keyedfiles[$post->id] as $file) {
+//                $output .= $format->file_output($file)  . '<br/ >';
+//            }
+//            $output .= "</div>";
+//        }
+//
+//        $output .= '</td></tr></table>'."\n\n";
+
+        $output = "hello";
+        return $output;
+    }
+    /**
+     * @return string
+     */
+    public static function display_name() {
+        return get_string('modulename', 'workshop');
+    }
+    public static function base_supported_formats() {
+        return array(PORTFOLIO_FORMAT_FILE, PORTFOLIO_FORMAT_RICHHTML, PORTFOLIO_FORMAT_PLAINHTML, PORTFOLIO_FORMAT_LEAP2A);
+    }
 }

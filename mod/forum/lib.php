@@ -4031,7 +4031,6 @@ function forum_print_attachments($post, $cm, $type) {
     $output = '';
 
     $canexport = !empty($CFG->enableportfolios) && (has_capability('mod/forum:exportpost', $context) || ($post->userid == $USER->id && has_capability('mod/forum:exportownpost', $context)));
-
     if ($canexport) {
         require_once($CFG->libdir.'/portfoliolib.php');
     }
