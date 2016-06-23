@@ -281,6 +281,11 @@ class mod_workshop_renderer extends plugin_renderer_base {
      * @return string html code to be displayed
      */
     protected function render_workshop_user_plan(workshop_user_plan $plan) {
+        $o  = '';    // output HTML code
+        $numberofphases = 5;
+        $o .= html_writer::start_tag('div', array('class' => 'userplan'));
+        $o .= html_writer::tag('span', get_string('userplanaccessibilitytitle', 'workshop', $numberofphases),
+            array('class' => 'accesshide'));
         foreach ($plan->phases as $phasecode => $phase) {
             $o .= html_writer::start_tag('dl', array('class' => 'phase'));
             $actions = '';
@@ -302,6 +307,10 @@ class mod_workshop_renderer extends plugin_renderer_base {
                 $actions = $this->output->container($actions, 'actions');
             }
             $title = html_writer::tag('span', $phase->title);
+            if ($phase->active) {
+                $title .= html_writer::tag('span', get_string('userplancurrentphase', 'workshop'),
+                    array('class' => 'accesshide'));
+            }
             $classes = 'phase' . $phasecode;
             if ($phase->active) {
                 $classes .= ' active';
@@ -315,7 +324,7 @@ class mod_workshop_renderer extends plugin_renderer_base {
             $o .= html_writer::end_tag('dd');
             $o .= html_writer::end_tag('dl');
         }
-        $o = $this->output->container($o, 'userplan');
+        $o .= html_writer::end_tag('div');
         return $o;
     }
 
