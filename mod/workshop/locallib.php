@@ -4130,7 +4130,26 @@ class workshop_portfolio_caller extends portfolio_module_caller_base {
     }
 
     function prepare_package() {
-        return "hello";
+        // set up the leap2a writer if we need it
+        $writingleap = false;
+        if ($this->exporter->get('formatclass') == PORTFOLIO_FORMAT_LEAP2A) {
+            $leapwriter = $this->exporter->get('format')->leap2a_writer();
+            $writingleap = true;
+        }
+
+        $posthtml = $this->prepare_post($this->submission);
+
+        $content = $posthtml;
+        $name = 'submission.html';
+        $manifest = ($this->exporter->get('format') instanceof PORTFOLIO_FORMAT_RICH);
+
+//        if ($writingleap) {
+//            $this->prepare_post_leap2a($leapwriter, $this->post, $posthtml);
+//            $content = $leapwriter->to_xml();
+//            $name = $this->exporter->get('format')->manifest_name();
+//        }
+        //$this->copy_files($this->multifiles);
+          $this->get('exporter')->write_new_file($content, $name, $manifest);
     }
 
     function expected_time() {
@@ -4162,7 +4181,7 @@ class workshop_portfolio_caller extends portfolio_module_caller_base {
      * @param int $post
      * @return string
      */
-    private function prepare_post($post, $fileoutputextras=null) {
+    private function prepare_post($submission, $fileoutputextras=null) {
         global $DB;
 
         $DB->set_debug(true);
@@ -4220,7 +4239,7 @@ class workshop_portfolio_caller extends portfolio_module_caller_base {
 //
 //        $output .= '</td></tr></table>'."\n\n";
 
-        $output = "hello";
+        $output = '<span>hello</span>';
         return $output;
     }
     /**

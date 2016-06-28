@@ -403,7 +403,7 @@ if (!$delete) {
         //}
         //$button->render($displayformat, $addstr);
         echo html_writer::start_tag('div', array('class' => 'singlebutton'));
-        echo $button->to_html(PORTFOLIO_ADD_FULL_FORM, 'Export to portfolio');
+        echo $button->to_html(PORTFOLIO_ADD_FULL_FORM, 'Export discussion to portfolio');
         echo html_writer::end_tag('div');
     }
 }
@@ -451,7 +451,7 @@ if ($isreviewer) {
         //}
         //$button->render($displayformat, $addstr);
         echo html_writer::start_tag('div', array('class' => 'singlebutton'));
-        echo $button->to_html(PORTFOLIO_ADD_FULL_FORM, 'Export assessment');
+        echo $button->to_html(PORTFOLIO_ADD_FULL_FORM, 'Export assessment to portfolio');
         echo html_writer::end_tag('div');
     }
 
