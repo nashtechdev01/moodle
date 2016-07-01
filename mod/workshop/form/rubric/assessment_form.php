@@ -92,7 +92,11 @@ class workshop_rubric_list_assessment_form extends workshop_rubric_assessment_fo
                 $definition = $fields->{'definition__idx_'.$i.'__idy_'.$j};
                 $definitionformat = $fields->{'definition__idx_'.$i.'__idy_'.$j.'format'};
                 $levelgrp[] = $mform->createElement('radio', 'chosenlevelid__idx_'.$i, '',
-                        format_text($definition, $definitionformat, null, $workshop->course->id), $levelid);
+                        format_text($definition, $definitionformat, null, $workshop->course->id), $levelid,
+                        array('aria-labelledby' => 'id_dimensionhdr__idx_'.$i,
+                            'aria-describedby' => 'id_dim_' . $fields->{'dimensionid__idx_'.$i} . '_desc'
+                        )
+                    );
             }
             $mform->addGroup($levelgrp, 'levelgrp__idx_'.$i, '', "<br />\n", false);
         }

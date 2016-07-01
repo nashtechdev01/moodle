@@ -69,9 +69,14 @@ class workshop_comments_assessment_form extends workshop_assessment_form {
             $mform->addElement('html', $desc);
 
             // comment
-            $label = get_string('dimensioncomment', 'workshopform_comments');
+            $label = get_string('dimensioncommentfor', 'workshopform_comments', $dimtitle);
             //$mform->addElement('editor', 'peercomment__idx_' . $i, $label, null, array('maxfiles' => 0));
-            $mform->addElement('textarea', 'peercomment__idx_' . $i, $label, array('cols' => 60, 'rows' => 10));
+            $mform->addElement('textarea', 'peercomment__idx_' . $i, $label,
+                    array('cols' => 60, 'rows' => 10,
+                        'aria-labelledby' => 'id_dimensionhdr__idx_'.$i,
+                        'aria-describedby' => 'id_dim_' . $fields->{'dimensionid__idx_'.$i} . '_desc'
+                    )
+            );
             $mform->addRule('peercomment__idx_' . $i, null, 'required', null, 'client');
         }
         $this->set_data($current);
