@@ -75,16 +75,25 @@ class workshop_accumulative_assessment_form extends workshop_assessment_form {
             $mform->addElement('html', $desc);
 
             // grade for this aspect
-            $label = get_string('dimensiongrade', 'workshopform_accumulative');
+            $label = get_string('dimensiongradefor', 'workshopform_accumulative', $dimtitle);
             $options = make_grades_menu($fields->{'grade__idx_' . $i});
             $options = array('-1' => get_string('choosedots')) + $options;
-            $mform->addElement('select', 'grade__idx_' . $i, $label, $options);
+            $mform->addElement('select', 'grade__idx_' . $i, $label, $options,
+                    array('aria-labelledby' => 'id_dimensionhdr__idx_'.$i,
+                        'aria-describedby' => 'id_dim_' . $fields->{'dimensionid__idx_'.$i} . '_desc'
+                    )
+            );
             $mform->addRule(array('grade__idx_' . $i, 'minusone') , get_string('mustchoosegrade', 'workshopform_accumulative'), 'compare', 'gt');
 
             // comment
-            $label = get_string('dimensioncomment', 'workshopform_accumulative');
+            $label = get_string('dimensioncommentfor', 'workshopform_accumulative', $dimtitle);
             //$mform->addElement('editor', 'peercomment__idx_' . $i, $label, null, array('maxfiles' => 0));
-            $mform->addElement('textarea', 'peercomment__idx_' . $i, $label, array('cols' => 60, 'rows' => 5));
+            $mform->addElement('textarea', 'peercomment__idx_' . $i, $label,
+                    array('cols' => 60, 'rows' => 5,
+                        'aria-labelledby' => 'id_dimensionhdr__idx_'.$i,
+                        'aria-describedby' => 'id_dim_' . $fields->{'dimensionid__idx_'.$i} . '_desc'
+                    )
+            );
         }
         $this->set_data($current);
     }
