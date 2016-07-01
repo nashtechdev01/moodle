@@ -71,14 +71,27 @@ class workshop_numerrors_assessment_form extends workshop_assessment_form {
             // evaluation of the assertion
             $label = get_string('dimensiongrade', 'workshopform_numerrors');
             $mform->addGroup(array(
-                $mform->createElement('radio', 'grade__idx_' . $i, '', $fields->{'grade0__idx_'.$i}, -1),
-                $mform->createElement('radio', 'grade__idx_' . $i, '', $fields->{'grade1__idx_'.$i}, 1),
-            ), 'group_grade__idx_' . $i, get_string('yourassessment', 'workshop'), '<br />', false);
+                $mform->createElement('radio', 'grade__idx_' . $i, '', $fields->{'grade0__idx_'.$i}, -1,
+                        array('aria-labelledby' => 'id_dimensionhdr__idx_'.$i,
+                            'aria-describedby' => 'id_dim_' . $fields->{'dimensionid__idx_'.$i} . '_desc'
+                        )
+                ),
+                $mform->createElement('radio', 'grade__idx_' . $i, '', $fields->{'grade1__idx_'.$i}, 1,
+                        array('aria-labelledby' => 'id_dimensionhdr__idx_'.$i,
+                            'aria-describedby' => 'id_dim_' . $fields->{'dimensionid__idx_'.$i} . '_desc'
+                        )
+                ),
+            ), 'group_grade__idx_' . $i, get_string('yourassessmentfor', 'workshop', $dimtitle), '<br />', false);
             $mform->addRule('group_grade__idx_' . $i, get_string('required'), 'required');
 
             // comment
-            $label = get_string('dimensioncomment', 'workshopform_numerrors');
-            $mform->addElement('textarea', 'peercomment__idx_' . $i, $label, array('cols' => 60, 'rows' => 5));
+            $label = get_string('dimensioncommentfor', 'workshopform_numerrors', $dimtitle);
+            $mform->addElement('textarea', 'peercomment__idx_' . $i, $label,
+                    array('cols' => 60, 'rows' => 5,
+                        'aria-labelledby' => 'id_dimensionhdr__idx_'.$i,
+                        'aria-describedby' => 'id_dim_' . $fields->{'dimensionid__idx_'.$i} . '_desc'
+                    )
+            );
         }
         $this->set_data($current);
     }
