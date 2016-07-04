@@ -4149,6 +4149,7 @@ class workshop_portfolio_caller extends portfolio_module_caller_base {
 //            $name = $this->exporter->get('format')->manifest_name();
 //        }
         //$this->copy_files($this->multifiles);
+
           $this->get('exporter')->write_new_file($content, $name, $manifest);
     }
 
@@ -4165,7 +4166,7 @@ class workshop_portfolio_caller extends portfolio_module_caller_base {
     private function prepare_post($submission, $fileoutputextras=null) {
         global $DB;
 
-        $DB->set_debug(true);
+       // $DB->set_debug(true);
 
 //        static $users;
 //        if (empty($users)) {
@@ -4229,7 +4230,7 @@ class workshop_portfolio_caller extends portfolio_module_caller_base {
      */
     function get_return_url() {
         global $CFG;
-        return $CFG->wwwroot . '/mod/workshop/submission.php?cmid' . $this->cmid;
+        return $CFG->wwwroot . '/mod/workshop/submission.php?cmid=' . $this->cmid;
     }
     function get_navigation() {
         // No extra navigation by default, link to the course module already included.
