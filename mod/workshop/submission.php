@@ -397,9 +397,9 @@ if (!$delete) {
         $button = new portfolio_add_button();
         $button->set_callback_options('workshop_portfolio_caller', array('submissionid' => $submission->id,'cmid' => $cmid), 'mod_workshop');
         //if (empty($attachments)) {
-        //    $button->set_formats(PORTFOLIO_FORMAT_PLAINHTML);
+            $button->set_formats(PORTFOLIO_FORMAT_PLAINHTML);
         //} else {
-        $button->set_formats(PORTFOLIO_FORMAT_RICHHTML);
+        //$button->set_formats(PORTFOLIO_FORMAT_RICHHTML);
         //}
         //$button->render($displayformat, $addstr);
         echo html_writer::start_tag('div', array('class' => 'singlebutton'));

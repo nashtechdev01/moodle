@@ -4152,27 +4152,8 @@ class workshop_portfolio_caller extends portfolio_module_caller_base {
           $this->get('exporter')->write_new_file($content, $name, $manifest);
     }
 
-    function expected_time() {
 
-    }
 
-    /**
-     * @uses CONTEXT_MODULE
-     * @return bool
-     */
-    function check_permissions() {
-        $context = context_module::instance($this->cmid);
-//        if ($this->post) {
-//            return (has_capability('mod/forum:exportpost', $context)
-//                || ($this->post->userid == $this->user->id
-//                    && has_capability('mod/worksoh:exportownpost', $context)));
-//        }
-        return has_capability('mod/workshop:exportsubmission', $context);
-    }
-
-    function get_sha1() {
-
-    }
 
     /**
      * this is a function to output submission
@@ -4242,6 +4223,46 @@ class workshop_portfolio_caller extends portfolio_module_caller_base {
         $output = '<span>hello</span>';
         return $output;
     }
+    /**
+     * @global object
+     * @return string
+     */
+    function get_return_url() {
+        global $CFG;
+        return $CFG->wwwroot . '/mod/workshop/submission.php?cmid' . $this->cmid;
+    }
+    function get_navigation() {
+        // No extra navigation by default, link to the course module already included.
+        $extranav = array();
+        return array($extranav, $this->cm);
+
+     }
+
+    function expected_time() {
+        return PORTFOLIO_TIME_LOW;
+    }
+
+    /**
+     * @uses CONTEXT_MODULE
+     * @return bool
+     */
+    function check_permissions() {
+        return true;
+        $context = context_module::instance($this->cmid);
+//        if ($this->post) {
+//            return (has_capability('mod/forum:exportpost', $context)
+//                || ($this->post->userid == $this->user->id
+//                    && has_capability('mod/worksoh:exportownpost', $context)));
+//        }
+        return has_capability('mod/workshop:exportsubmission', $context);
+    }
+    /**
+     * @return string
+     */
+    function get_sha1(){
+        return sha1('hello');
+    }
+
     /**
      * @return string
      */

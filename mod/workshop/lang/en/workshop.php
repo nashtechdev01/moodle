@@ -330,6 +330,7 @@ $string['workshop:addinstance'] = 'Add a new workshop';
 $string['workshop:allocate'] = 'Allocate submissions for review';
 $string['workshop:editdimensions'] = 'Edit assessment forms';
 $string['workshop:deletesubmissions'] = 'Delete submissions';
+$string['workshop:exportsubmission'] = 'Export own submission';
 $string['workshop:ignoredeadlines'] = 'Ignore time restrictions';
 $string['workshop:manageexamples'] = 'Manage example submissions';
 $string['workshopname'] = 'Workshop name';
