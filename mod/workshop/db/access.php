@@ -244,4 +244,23 @@ $capabilities = array(
             'manager' => CAP_ALLOW
         )
     ),
+
+    // Ability to export to portfolio of submission only
+    'mod/workshop:exportownsubmission' => array(
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array(
+            'student' => CAP_ALLOW
+        )
+    ),
+
+    // Ability to export to portfolio of discussion and assessment
+    'mod/workshop:exportownsubmissionandassessment' => array(
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array(
+            'student' => CAP_ALLOW
+        )
+    ),
+
 );
