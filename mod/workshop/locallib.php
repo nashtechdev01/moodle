@@ -4100,6 +4100,7 @@ class workshop_portfolio_caller extends portfolio_module_caller_base {
     protected $cmid;
 
     private $submission;
+    private $workshop;
 
     /**
      * @return array
@@ -4132,7 +4133,9 @@ class workshop_portfolio_caller extends portfolio_module_caller_base {
         if (!$this->cm = get_coursemodule_from_instance('workshop', $this->submission->workshopid)) {
             throw new portfolio_caller_exception('err_invalidcoursemodule', 'workshop');
         }
-
+        $workshoprecord = $DB->get_record('workshop', array('id' => $this->cm->instance), '*', MUST_EXIST);
+        $course = $DB->get_record('course', array('id' => $this->cm->course), '*', MUST_EXIST);
+        $this->workshop = new workshop($workshoprecord, $this->cm, $course);
         // @todo load attachment and assessment base on user capability
 
         // @todo The anonymity of exported assessments should probably follow the anonymity in the workshop itself.
@@ -4156,15 +4159,57 @@ class workshop_portfolio_caller extends portfolio_module_caller_base {
     }
 
     /**
-     * this is a function to output submission
+     * this is a function to output submission, this is cut down version of submission single view
      *
      * @global object
-     * @param int $post
+     * @param stdClass $submission
      * @return string
      */
     private function prepare_submission($submission, $fileoutputextras=null) {
-        global $DB;
-        $output = html_writer::tag("h1","Submission Content");
+        $ispublished    = ($this->workshop->phase == workshop::PHASE_CLOSED
+            and $submission->published == 1
+            and has_capability('mod/workshop:viewpublishedsubmissions', $this->workshop->context));
+        $seenaspublished = false; // is the submission seen as a published submission?
+
+        $output = '';
+        $output .= html_writer::tag("h2", $this->workshop->name);
+        if (trim($this->workshop->instructauthors)) {
+            $output .= html_writer::tag("h3", get_string('instructauthors', 'workshop'));
+            $output .= $this->workshop->instructauthors;
+        }
+
+        if ($submission->id and $ispublished) {
+            $seenaspublished = true;
+        }
+
+        if ($seenaspublished) {
+            $showauthor = has_capability('mod/workshop:viewauthorpublished', $this->workshop->context);
+        } else {
+            $showauthor = has_capability('mod/workshop:viewauthornames', $this->workshop->context);
+        }
+
+        $submissionurl = $this->workshop->submission_url($submission->id);
+
+        // write submission content
+        $output .= html_writer::start_tag('div', array('class' => 'submissionheader', 'style' => 'background-color: #ddd;'));
+        $output .= html_writer::tag("h3", html_writer::link($submissionurl, format_string($submission->title)));
+        if ($showauthor) {
+            $author = new stdclass();
+            $author = username_load_fields_from_object($author, $submission, 'author');
+            echo "<pre>";
+            print_r($author);
+            echo "</pre>";   exit;
+            $userurl            = new moodle_url('/user/view.php',
+                array('id' => $author->id, 'course' => $this->cmid));
+            $a                  = new stdclass();
+            $a->name            = fullname($author);
+            $a->url             = $userurl->out();
+            $byfullname         = get_string('byfullname', 'workshop', $a);
+            $output .= html_writer::tag('div', $byfullname);
+        }
+        $output .= html_writer::end_tag('div');
+        // end write submission content
+
         // @todo return the html output of submission
         return $output;
     }

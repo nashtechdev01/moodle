@@ -43,6 +43,7 @@ if (isguestuser()) {
 }
 
 $workshoprecord = $DB->get_record('workshop', array('id' => $cm->instance), '*', MUST_EXIST);
+
 $workshop = new workshop($workshoprecord, $cm, $course);
 
 $PAGE->set_url($workshop->submission_url(), array('cmid' => $cmid, 'id' => $id));
@@ -395,7 +396,7 @@ if (!$delete) {
     }
     // @todo check user id and submission, just allow student own submission and assessment given
     // add portfolio export button for whole submission and assessment
-    if($canexportownsubmissionandassessment) {
+    if($canexportownsubmissionandassessment && $ownsubmission) {
         $button = new portfolio_add_button();
         $button->set_callback_options('workshop_portfolio_caller', array('submissionid' => $submission->id, 'cmid' => $cmid), 'mod_workshop');
         $button->set_formats(PORTFOLIO_FORMAT_PLAINHTML);
@@ -404,7 +405,7 @@ if (!$delete) {
         echo html_writer::end_tag('div');
     }
     // add portfolio export button for submission only
-    else if($canexportownsubmission) {
+    else if($canexportownsubmission && $ownsubmission) {
         $button = new portfolio_add_button();
         $button->set_callback_options('workshop_portfolio_caller', array('submissionid' => $submission->id, 'cmid' => $cmid), 'mod_workshop');
         $button->set_formats(PORTFOLIO_FORMAT_PLAINHTML);
