@@ -34,6 +34,7 @@ require_once($CFG->libdir . '/gradelib.php');   // we use some rounding and comp
 require_once($CFG->libdir . '/filelib.php');
 require_once($CFG->libdir . '/portfolio/caller.php');
 
+
 /**
  * Full-featured workshop API
  *
@@ -4097,10 +4098,12 @@ class workshop_final_grades implements renderable {
  */
 class workshop_portfolio_caller extends portfolio_module_caller_base {
     protected $submissionid;
+    protected $assessmentid;
     protected $cmid;
 
     private $submission;
     private $workshop;
+    private $showauthor;
 
     /**
      * @return array
@@ -4108,6 +4111,7 @@ class workshop_portfolio_caller extends portfolio_module_caller_base {
     public static function expected_callbackargs() {
         return array(
             'submissionid' => false,
+            'assessmentid' => false,
             'cmid' => false,
         );
     }
@@ -4146,9 +4150,17 @@ class workshop_portfolio_caller extends portfolio_module_caller_base {
     }
 
     function prepare_package() {
-        $submissionhtml = $this->prepare_submission($this->submission);
-        $content = $submissionhtml;
-        $name = 'submission.html';
+        if($this->assessmentid){
+            $assessmenthtml = $this->prepare_assessment($this->submission, $this->assessmentid);
+            $content = $assessmenthtml;
+            $name = 'assessment.html';
+        }
+        else {
+            $submissionhtml = $this->prepare_submission($this->submission);
+            $content = $submissionhtml;
+            $name = 'submission.html';
+        }
+
         $manifest = ($this->exporter->get('format') instanceof PORTFOLIO_FORMAT_RICH);
         $this->get('exporter')->write_new_file($content, $name, $manifest);
         // @todo set up leap2a writer
@@ -4159,19 +4171,21 @@ class workshop_portfolio_caller extends portfolio_module_caller_base {
     }
 
     /**
-     * this is a function to output submission, this is cut down version of submission single view
+     * this is a function to output submission, this is cut down version of render workshop submission
      *
      * @global object
      * @param stdClass $submission
      * @return string
      */
     private function prepare_submission($submission, $fileoutputextras=null) {
+        global $DB;
+        $output = '';
+
         $ispublished    = ($this->workshop->phase == workshop::PHASE_CLOSED
             and $submission->published == 1
             and has_capability('mod/workshop:viewpublishedsubmissions', $this->workshop->context));
         $seenaspublished = false; // is the submission seen as a published submission?
 
-        $output = '';
         $output .= html_writer::tag("h2", $this->workshop->name);
         if (trim($this->workshop->instructauthors)) {
             $output .= html_writer::tag("h3", get_string('instructauthors', 'workshop'));
@@ -4183,9 +4197,9 @@ class workshop_portfolio_caller extends portfolio_module_caller_base {
         }
 
         if ($seenaspublished) {
-            $showauthor = has_capability('mod/workshop:viewauthorpublished', $this->workshop->context);
+            $this->showauthor = has_capability('mod/workshop:viewauthorpublished', $this->workshop->context);
         } else {
-            $showauthor = has_capability('mod/workshop:viewauthornames', $this->workshop->context);
+            $this->showauthor = has_capability('mod/workshop:viewauthornames', $this->workshop->context);
         }
 
         $submissionurl = $this->workshop->submission_url($submission->id);
@@ -4193,12 +4207,9 @@ class workshop_portfolio_caller extends portfolio_module_caller_base {
         // write submission content
         $output .= html_writer::start_tag('div', array('class' => 'submissionheader', 'style' => 'background-color: #ddd;'));
         $output .= html_writer::tag("h3", html_writer::link($submissionurl, format_string($submission->title)));
-        if ($showauthor) {
-            $author = new stdclass();
-            $author = username_load_fields_from_object($author, $submission, 'author');
-            echo "<pre>";
-            print_r($author);
-            echo "</pre>";   exit;
+
+        if ($this->showauthor) {
+            $author = $DB->get_record('user', array('id' => $submission->authorid));
             $userurl            = new moodle_url('/user/view.php',
                 array('id' => $author->id, 'course' => $this->cmid));
             $a                  = new stdclass();
@@ -4207,10 +4218,116 @@ class workshop_portfolio_caller extends portfolio_module_caller_base {
             $byfullname         = get_string('byfullname', 'workshop', $a);
             $output .= html_writer::tag('div', $byfullname);
         }
+
+        $created = get_string('userdatecreated', 'workshop', userdate($submission->timecreated));
+        $output .= html_writer::tag("div", $created, array('style' => 'font-size:x-small'));
+
+        if ($submission->timemodified > $submission->timecreated) {
+            $modified = get_string('userdatemodified', 'workshop', userdate($submission->timemodified));
+            $output .= $output .= html_writer::link($assessment->url, $title);
+        }
+
         $output .= html_writer::end_tag('div');
+        $content = format_text($submission->content, $submission->contentformat);
+        $output .= html_writer::tag("div", $content);
         // end write submission content
 
-        // @todo return the html output of submission
+        // @todo return list of attachments
+        return $output;
+    }
+
+    /**
+     * this is a function to output submission assessment, this is cut down version of render workshop assessment
+     *
+     * @global object
+     * @param stdClass $submission
+     * @return string
+     */
+    private function prepare_assessment($submission, $assessmentid) {
+        global $DB;
+        global $USER;
+        global $PAGE;
+        $output = '';
+
+        $strategy       = $this->workshop->grading_strategy_instance();
+        $assessments    = $this->workshop->get_assessments_of_submission($submission->id);
+        $showreviewer   = has_capability('mod/workshop:viewreviewernames', $this->workshop->context);
+
+        $assessment = new stdClass();
+        $assessment = $assessments[$assessmentid];
+
+        $mform      = $strategy->get_assessment_form($PAGE->url, 'assessment', $assessment, false);
+        $options    = array(
+            'showreviewer'  => $showreviewer,
+            'showauthor'    => $this->showauthor,
+            'showform'      => !is_null($assessment->grade),
+            'showweight'    => true,
+        );
+        $displayassessment = $this->workshop->prepare_assessment($assessment, $mform, $options);
+
+        // start write assessment content
+        $anonymous = is_null($displayassessment->reviewer);
+
+        $output .= html_writer::start_tag('div', array('class' => 'assessmentheader', 'style' => 'background-color: #ddd;'));
+
+        if (!empty($displayassessment->title)) {
+            $title = s($displayassessment->title);
+        } else {
+            $title = get_string('assessment', 'workshop');
+        }
+
+        if ($displayassessment->url instanceof moodle_url) {
+            $output .= html_writer::tag("div", html_writer::link($displayassessment->url, $title));
+        } else {
+            $output .= html_writer::tag("div", $title);
+        }
+
+        if (!$anonymous) {
+            $reviewer   = $displayassessment->reviewer;
+            $userurl    = new moodle_url('/user/view.php',
+                array('id' => $reviewer->id, 'course' => $this->cmid));
+            $a          = new stdClass();
+            $a->name    = fullname($reviewer);
+            $a->url     = $userurl->out();
+            $byfullname = get_string('assessmentby', 'workshop', $a);
+            $output .= html_writer::tag("div", $byfullname);
+        }
+
+        if (is_null($displayassessment->realgrade)) {
+            $output .= html_writer::tag("div", get_string('notassessed', 'workshop'));
+        } else {
+            $a              = new stdClass();
+            $a->max         = $displayassessment->maxgrade;
+            $a->received    = $displayassessment->realgrade;
+            $output .= html_writer::tag("div", get_string('gradeinfo', 'workshop', $a));
+
+            if (!is_null($displayassessment->weight) and $displayassessment->weight != 1) {
+                $output .= html_writer::tag("div", get_string('weightinfo', 'workshop', $displayassessment->weight));
+            }
+        }
+        $output .= html_writer::end_tag('div');
+        if (!is_null($displayassessment->form)) {
+            $output .= html_writer::tag("div", get_string('assessmentform', 'workshop'));
+            $output .= html_writer::tag("div", self::moodleform($displayassessment->form));
+
+            if (!$displayassessment->form->is_editable()) {
+                $output .= html_writer::tag("div", get_string('overallfeedback', 'workshop'));
+                $content = $displayassessment->get_overall_feedback_content();
+                $output .= html_writer::tag("div", $content);
+            }
+        }
+
+        $attachments = $displayassessment->get_overall_feedback_attachments();
+
+        if (!empty($attachments)) {
+            $files = '';
+            foreach ($attachments as $attachment) {
+                $link = html_writer::link($attachment->fileurl, substr($attachment->filepath.$attachment->filename, 1));
+                $files .= html_writer::tag('li', $link, array('class' => $attachment->mimetype));
+            }
+            $output .= html_writer::tag('ul', $files, array('class' => 'files'));
+        }
+
         return $output;
     }
 
@@ -4262,5 +4379,25 @@ class workshop_portfolio_caller extends portfolio_module_caller_base {
 
     public static function base_supported_formats() {
         return array(PORTFOLIO_FORMAT_FILE, PORTFOLIO_FORMAT_RICHHTML, PORTFOLIO_FORMAT_PLAINHTML, PORTFOLIO_FORMAT_LEAP2A);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Static helpers
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Helper method dealing with the fact we can not just fetch the output of moodleforms
+     *
+     * @param moodleform $mform
+     * @return string HTML
+     */
+    protected static function moodleform(moodleform $mform) {
+
+        ob_start();
+        $mform->display();
+        $o = ob_get_contents();
+        ob_end_clean();
+
+        return $o;
     }
 }
