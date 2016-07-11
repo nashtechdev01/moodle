@@ -4100,6 +4100,7 @@ class workshop_portfolio_caller extends portfolio_module_caller_base {
     protected $submissionid;
     protected $assessmentid;
     protected $cmid;
+    protected $submissionfiles = array();
 
     private $submission;
     private $workshop;
@@ -4142,6 +4143,11 @@ class workshop_portfolio_caller extends portfolio_module_caller_base {
         $this->workshop = new workshop($workshoprecord, $this->cm, $course);
         // @todo load attachment and assessment base on user capability
 
+        if($this->submissionid){
+            $fs     = get_file_storage();
+            $this->submissionfiles  = $fs->get_area_files($this->workshop->context->id, 'mod_workshop', 'submission_attachment', $this->submissionid);
+        }
+
         // @todo The anonymity of exported assessments should probably follow the anonymity in the workshop itself.
         // If students were able to see their reviewers' names in the workshop, they should be allowed to have
         // that info in the portfolio, too.
@@ -4150,24 +4156,64 @@ class workshop_portfolio_caller extends portfolio_module_caller_base {
     }
 
     function prepare_package() {
-        if($this->assessmentid){
+        // set up the leap2a writer if we need it
+        $writingleap = false;
+
+        if ($this->exporter->get('formatclass') == PORTFOLIO_FORMAT_LEAP2A) {
+            $leapwriter = $this->exporter->get('format')->leap2a_writer();
+            $writingleap = true;
+        }
+
+        if($this->assessmentid && $this->submissionid){
             $assessmenthtml = $this->prepare_assessment($this->submission, $this->assessmentid);
             $content = $assessmenthtml;
             $name = 'assessment.html';
         }
-        else {
+        if($this->submissionid) {
             $submissionhtml = $this->prepare_submission($this->submission);
             $content = $submissionhtml;
             $name = 'submission.html';
+
+            if ($writingleap) {
+                $this->prepare_submission_leap2a($leapwriter, $this->submission, $submissionhtml);
+                $content = $leapwriter->to_xml();
+                $name = $this->exporter->get('format')->manifest_name();
+            }
         }
 
         $manifest = ($this->exporter->get('format') instanceof PORTFOLIO_FORMAT_RICH);
         $this->get('exporter')->write_new_file($content, $name, $manifest);
-        // @todo set up leap2a writer
 
-        // @todo prepare package for export whole submission
 
-        // @todo prepare package for export submission only
+
+    }
+
+    /**
+     * helper function to add a leap2a entry element
+     * that corresponds to a single forum post,
+     * including any attachments
+     *
+     * the entry/ies are added directly to the leapwriter, which is passed by ref
+     *
+     * @param portfolio_format_leap2a_writer $leapwriter writer object to add entries to
+     * @param object $post                               the stdclass object representing the database record
+     * @param string $posthtml                           the content of the post (prepared by {@link prepare_post}
+     *
+     * @return int id of new entry
+     */
+    private function prepare_submission_leap2a(portfolio_format_leap2a_writer $leapwriter, $submission, $submissionhtml) {
+        global $DB;
+        $entry = new portfolio_format_leap2a_entry('workshopsubmission' . $submission->id,  $submission->title, 'resource', $submissionhtml);
+        $entry->published = $submission->timecreated;
+        $entry->updated = $submission->timemodified;
+        $entry->author = $DB->get_record('user', array('id' => $submission->id), 'id,firstname,lastname,email');
+
+        if (is_array($this->submissionfiles) && array_key_exists($submission->id, $this->submissionfiles) && is_array($this->submissionfiles[$submission->id])) {
+            $leapwriter->link_files($entry, $this->submissionfiles[$submission->id], 'workshopsubmission' . $submission->id . 'attachment');
+        }
+        $entry->add_category('web', 'resource_type');
+        $leapwriter->add_entry($entry);
+        return $entry->id;
     }
 
     /**
@@ -4179,13 +4225,13 @@ class workshop_portfolio_caller extends portfolio_module_caller_base {
      */
     private function prepare_submission($submission, $fileoutputextras=null) {
         global $DB;
+        global $CFG;
         $output = '';
 
         $ispublished    = ($this->workshop->phase == workshop::PHASE_CLOSED
             and $submission->published == 1
             and has_capability('mod/workshop:viewpublishedsubmissions', $this->workshop->context));
         $seenaspublished = false; // is the submission seen as a published submission?
-
         $output .= html_writer::tag("h2", $this->workshop->name);
         if (trim($this->workshop->instructauthors)) {
             $output .= html_writer::tag("h3", get_string('instructauthors', 'workshop'));
@@ -4230,6 +4276,30 @@ class workshop_portfolio_caller extends portfolio_module_caller_base {
         $output .= html_writer::end_tag('div');
         $content = format_text($submission->content, $submission->contentformat);
         $output .= html_writer::tag("div", $content);
+
+
+        $outputfiles = '';
+        foreach ($this->submissionfiles as $file) {
+            if ($file->is_directory()) {
+                continue;
+            }
+            $filepath   = $file->get_filepath();
+            $filename   = $file->get_filename();
+            $fileurl    = moodle_url::make_pluginfile_url($this->workshop->context->id, 'mod_workshop', 'submission_attachment',
+                $submission->id, $filepath, $filename, true);
+            $type       = $file->get_mimetype();
+            $linkhtml   = html_writer::link($fileurl, $filename);
+            $outputfiles .= html_writer::tag('li', $linkhtml, array('class' => $type));
+//
+            if (!empty($CFG->enableplagiarism)) {
+                require_once($CFG->libdir.'/plagiarismlib.php');
+                $outputfiles .= plagiarism_get_links(array('userid' => $file->get_userid(),
+                    'file' => $file,
+                    'cmid' => $this->cmid,
+                    'course' => $this->cm->course));
+            }
+        }
+        $output .= $outputfiles;
         // end write submission content
 
         // @todo return list of attachments
@@ -4311,9 +4381,11 @@ class workshop_portfolio_caller extends portfolio_module_caller_base {
             $output .= html_writer::tag("div", self::moodleform($displayassessment->form));
 
             if (!$displayassessment->form->is_editable()) {
-                $output .= html_writer::tag("div", get_string('overallfeedback', 'workshop'));
                 $content = $displayassessment->get_overall_feedback_content();
-                $output .= html_writer::tag("div", $content);
+                if($content != ''){
+                    $output .= html_writer::tag("div", get_string('overallfeedback', 'workshop'));
+                    $output .= html_writer::tag("div", $content);
+                }
             }
         }
 
