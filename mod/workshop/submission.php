@@ -88,8 +88,11 @@ $canallocate    = has_capability('mod/workshop:allocate', $workshop->context);
 $canpublish     = has_capability('mod/workshop:publishsubmissions', $workshop->context);
 $canoverride    = (($workshop->phase == workshop::PHASE_EVALUATION) and has_capability('mod/workshop:overridegrades', $workshop->context));
 $candeleteall   = has_capability('mod/workshop:deletesubmissions', $workshop->context);
-$canexportownsubmission = !empty($CFG->enableportfolios) && (has_capability('mod/workshop:exportownsubmission', $workshop->context));
-$canexportownsubmissionandassessment = !empty($CFG->enableportfolios) && (has_capability('mod/workshop:exportownsubmissionandassessment', $workshop->context));
+$canexportownsubmission = !empty($CFG->enableportfolios)
+    && (has_capability('mod/workshop:exportownsubmission', $workshop->context)) && $ownsubmission;
+$canexportownsubmissionassessment = !empty($CFG->enableportfolios)
+    && (has_capability('mod/workshop:exportownsubmission', $workshop->context))
+    && (has_capability('mod/workshop:exportownsubmissionassessment', $workshop->context)) && $ownsubmission;
 $userassessment = $workshop->get_assessment_of_submission_by_user($submission->id, $USER->id);
 $isreviewer     = !empty($userassessment);
 $editable       = ($cansubmit and $ownsubmission);
@@ -143,7 +146,7 @@ if (!$candeleteall and $ownsubmission and $editable) {
 }
 
 // Load portfolio lib if user has capability to export
-if($canexportownsubmission || $canexportownsubmissionandassessment){
+if($canexportownsubmission || $canexportownsubmissionassessment){
     require_once($CFG->libdir.'/portfoliolib.php');
 }
 
@@ -393,23 +396,14 @@ if (!$delete) {
         $url = new moodle_url($PAGE->url, array('assess' => 1));
         echo $output->single_button($url, get_string('assess', 'workshop'), 'post');
     }
-    // @todo check user id and submission, just allow student own submission and assessment given
-    // add portfolio export button for whole submission and assessment
-    if($canexportownsubmissionandassessment) {
+
+    // add portfolio export button for submission
+    if($canexportownsubmission) {
         $button = new portfolio_add_button();
-        $button->set_callback_options('workshop_portfolio_caller', array('submissionid' => $submission->id, 'cmid' => $cmid), 'mod_workshop');
+        $button->set_callback_options('mod_workshop_portfolio_caller', array('submissionid' => $submission->id), 'mod_workshop');
         $button->set_formats(PORTFOLIO_FORMAT_PLAINHTML);
         echo html_writer::start_tag('div', array('class' => 'singlebutton'));
-        echo $button->to_html(PORTFOLIO_ADD_FULL_FORM, 'Export whole discussion to portfolio');
-        echo html_writer::end_tag('div');
-    }
-    // add portfolio export button for submission only
-    else if($canexportownsubmission) {
-        $button = new portfolio_add_button();
-        $button->set_callback_options('workshop_portfolio_caller', array('submissionid' => $submission->id, 'cmid' => $cmid), 'mod_workshop');
-        $button->set_formats(PORTFOLIO_FORMAT_PLAINHTML);
-        echo html_writer::start_tag('div', array('class' => 'singlebutton'));
-        echo $button->to_html(PORTFOLIO_ADD_FULL_FORM, 'Export discussion to portfolio');
+        echo $button->to_html(PORTFOLIO_ADD_FULL_FORM, get_string('exportsubmission', 'workshop'));
         echo html_writer::end_tag('div');
     }
 }
@@ -453,6 +447,15 @@ if ($isreviewer) {
             echo $output->render(new workshop_feedback_reviewer($userassessment));
         }
     }
+    // add portfolio export button for assessment
+    if($canexportownsubmissionassessment) {
+        $button = new portfolio_add_button();
+        $button->set_callback_options('mod_workshop_portfolio_caller', array('submissionid' => $submission->id, 'assessmentid' => $assessment->id), 'mod_workshop');
+        $button->set_formats(PORTFOLIO_FORMAT_PLAINHTML);
+        echo html_writer::start_tag('div', array('class' => 'singlebutton'));
+        echo $button->to_html(PORTFOLIO_ADD_FULL_FORM, get_string('exportsubmissionassessment', 'workshop'));
+        echo html_writer::end_tag('div');
+    }
 }
 
 if (has_capability('mod/workshop:viewallassessments', $workshop->context) or ($ownsubmission and $workshop->assessments_available())) {
@@ -486,6 +489,15 @@ if (has_capability('mod/workshop:viewallassessments', $workshop->context) or ($o
             if (strlen(trim($assessment->feedbackreviewer)) > 0) {
                 echo $output->render(new workshop_feedback_reviewer($assessment));
             }
+        }
+        // add portfolio export button for assessment
+        if($canexportownsubmissionassessment) {
+            $button = new portfolio_add_button();
+            $button->set_callback_options('mod_workshop_portfolio_caller', array('submissionid' => $submission->id, 'assessmentid' => $assessment->id), 'mod_workshop');
+            $button->set_formats(PORTFOLIO_FORMAT_PLAINHTML);
+            echo html_writer::start_tag('div', array('class' => 'singlebutton'));
+            echo $button->to_html(PORTFOLIO_ADD_FULL_FORM, get_string('exportsubmissionassessment', 'workshop'));
+            echo html_writer::end_tag('div');
         }
     }
 }

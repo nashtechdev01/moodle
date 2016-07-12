@@ -254,8 +254,8 @@ $capabilities = array(
         )
     ),
 
-    // Ability to export to portfolio of discussion and assessment
-    'mod/workshop:exportownsubmissionandassessment' => array(
+    // Ability to export to portfolio of submission's assessment
+    'mod/workshop:exportownsubmissionassessment' => array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
         'archetypes' => array(
