@@ -18,7 +18,7 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . '/portfolio/caller.php');
 
 /**
- * Workshop portfolio caller subclass to handle export submission and assessment to portfolio
+ * Workshop portfolio caller subclass to handle export submission and assessment to portfolio.
  *
  * @package   mod_workshop_portfolio_caller
  * @copyright Loc Nguyen <ndloc1905@gmail.com>
@@ -37,8 +37,9 @@ class mod_workshop_portfolio_caller extends portfolio_module_caller_base {
     private $showauthor;
 
     /**
-     * return array of expected call back arguments
-     * and whether they are required or not
+     * Return array of expected call back arguments
+     *
+     * and whether they are required or not.
      *
      * @return array
      */
@@ -50,8 +51,9 @@ class mod_workshop_portfolio_caller extends portfolio_module_caller_base {
     }
 
     /**
-     * load data required for the export
-     * load submission and assessment by submissionid, assessmentid
+     * Load data required for the export.
+     *
+     * Load submission and assessment by submissionid, assessmentid.
      *
      * @return void
      */
@@ -97,7 +99,7 @@ class mod_workshop_portfolio_caller extends portfolio_module_caller_base {
     }
 
     /**
-     * prepare the package ready to be passed off to the portfolio plugin
+     * Prepare the package ready to be passed off to the portfolio plugin.
      *
      * @return void
      */
@@ -117,8 +119,9 @@ class mod_workshop_portfolio_caller extends portfolio_module_caller_base {
     }
 
     /**
-     * helper function to output submission for export
-     * this is cut down version of workshop submission renderer function
+     * Helper function to output submission for export.
+     *
+     * This is cut down version of workshop submission renderer function.
      *
      * @global object
      * @param object $submission
@@ -185,8 +188,9 @@ class mod_workshop_portfolio_caller extends portfolio_module_caller_base {
     }
 
     /**
-     * helper function to output assessment for export
-     * this is a cut down function of workshop assessment renderer function
+     * Helper function to output assessment for export.
+     *
+     * This is a cut down function of workshop assessment renderer function.
      *
      * @global object
      * @param stdClass $displayassessment
@@ -276,36 +280,39 @@ class mod_workshop_portfolio_caller extends portfolio_module_caller_base {
     }
 
     /**
-     * return url for redirecting user when cancel or go back
+     * Return url for redirecting user when cancel or go back.
      *
      * @global object
      * @return string
      */
     public function get_return_url() {
         global $CFG;
-        return $CFG->wwwroot . '/mod/workshop/submission.php?cmid=' . $this->cm->id;
+        $returnurl = new moodle_url('/mod/workshop/submission.php',
+            array('cmid' => $this->cm->id));
+        return $returnurl->out();
     }
 
     /**
-     * get navigation that logically follows from the place the user was before
+     * Get navigation that logically follows from the place the user was before.
      *
      * @global object
      * @return array
      */
     public function get_navigation() {
         global $CFG;
-
+        $link = new moodle_url('/mod/workshop/submission.php',
+            array('cmid' => $this->cm->id));
         $navlinks = array();
         $navlinks[] = array(
             'name' => format_string($this->submission->title),
-            'link' => $CFG->wwwroot . 'mod/workshop/submission.php?cmid=' . $this->cm->id,
+            'link' => $link->out(),
             'type' => 'title'
         );
         return array($navlinks, $this->cm);
     }
 
     /**
-     * how long might we expect this export to take
+     * How long might we expect this export to take.
      *
      * @return constant one of PORTFOLIO_TIME_XX
      */
@@ -315,7 +322,7 @@ class mod_workshop_portfolio_caller extends portfolio_module_caller_base {
     }
 
     /**
-     * make sure that the current user is allowed to do the export
+     * Make sure that the current user is allowed to do the export.
      *
      * @uses CONTEXT_MODULE
      * @return boolean
@@ -330,21 +337,21 @@ class mod_workshop_portfolio_caller extends portfolio_module_caller_base {
     }
 
     /**
-     * return the sha1 of this content
+     * Return the sha1 of this content.
      *
      * @return string
      */
     public function get_sha1() {
         if ($this->submissionid && $this->assessmentid) {
-            return sha1($this->assessment->id . ',' . $this->assessment->title);
+            return sha1($this->assessment->id . ',' . $this->assessment->title . ',' . $this->assessment->timecreated);
         }
         if ($this->submissionid && !$this->assessmentid) {
-            return sha1($this->submission->id . ',' . $this->submission->title);
+            return sha1($this->submission->id . ',' . $this->submission->title . ',' . $this->submission->timecreated);
         }
     }
 
     /**
-     * return a nice name to be displayed about this export location
+     * Return a nice name to be displayed about this export location.
      *
      * @return string
      */
@@ -353,7 +360,7 @@ class mod_workshop_portfolio_caller extends portfolio_module_caller_base {
     }
 
     /**
-     * what formats this function *generally* supports
+     * What formats this function *generally* supports.
      *
      * @return array
      */
@@ -362,18 +369,16 @@ class mod_workshop_portfolio_caller extends portfolio_module_caller_base {
     }
 
     /**
-     * Helper method dealing with the fact we can not just fetch the output of moodleforms
+     * Helper method dealing with the fact we can not just fetch the output of moodleforms.
      *
      * @param moodleform $mform
      * @return string HTML
      */
     protected static function moodleform(moodleform $mform) {
-
         ob_start();
         $mform->display();
         $o = ob_get_contents();
         ob_end_clean();
-
         return $o;
     }
 }

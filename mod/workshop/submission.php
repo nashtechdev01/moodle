@@ -145,7 +145,7 @@ if (!$candeleteall and $ownsubmission and $editable) {
     }
 }
 
-// Load portfolio lib if user has capability to export
+// Load portfolio lib if user has capability to export.
 if($canexportownsubmission || $canexportownsubmissionassessment){
     require_once($CFG->libdir.'/portfoliolib.php');
 }
@@ -397,7 +397,7 @@ if (!$delete) {
         echo $output->single_button($url, get_string('assess', 'workshop'), 'post');
     }
 
-    // add portfolio export button for submission
+    // Add portfolio export button for submission.
     if($canexportownsubmission) {
         $button = new portfolio_add_button();
         $button->set_callback_options('mod_workshop_portfolio_caller', array('submissionid' => $submission->id), 'mod_workshop');
@@ -447,7 +447,7 @@ if ($isreviewer) {
             echo $output->render(new workshop_feedback_reviewer($userassessment));
         }
     }
-    // add portfolio export button for assessment
+    // Add portfolio export button for assessment.
     if($canexportownsubmissionassessment) {
         $button = new portfolio_add_button();
         $button->set_callback_options('mod_workshop_portfolio_caller', array('submissionid' => $submission->id, 'assessmentid' => $assessment->id), 'mod_workshop');
@@ -490,7 +490,7 @@ if (has_capability('mod/workshop:viewallassessments', $workshop->context) or ($o
                 echo $output->render(new workshop_feedback_reviewer($assessment));
             }
         }
-        // add portfolio export button for assessment
+        // Add portfolio export button for assessment.
         if($canexportownsubmissionassessment) {
             $button = new portfolio_add_button();
             $button->set_callback_options('mod_workshop_portfolio_caller', array('submissionid' => $submission->id, 'assessmentid' => $assessment->id), 'mod_workshop');
