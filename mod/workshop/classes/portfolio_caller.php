@@ -30,6 +30,7 @@ class mod_workshop_portfolio_caller extends portfolio_module_caller_base {
     protected $assessmentid;
     protected $cm;
     protected $submissionfiles = array();
+    protected $assessmentfiles = array();
 
     private $submission;
     private $assessment;
@@ -59,7 +60,6 @@ class mod_workshop_portfolio_caller extends portfolio_module_caller_base {
      */
     public function load_data() {
         global $DB;
-        global $PAGE;
 
         $this->submission = $DB->get_record('workshop_submissions', array('id' => $this->submissionid), '*', MUST_EXIST);
         $this->cm = get_coursemodule_from_instance('workshop', $this->submission->workshopid, 0, false, MUST_EXIST);
@@ -104,15 +104,32 @@ class mod_workshop_portfolio_caller extends portfolio_module_caller_base {
      * @return void
      */
     public function prepare_package() {
+        // Set up the leap2a writer if we need it.
+        $writingleap = false;
+        if ($this->exporter->get('formatclass') == PORTFOLIO_FORMAT_LEAP2A) {
+            $leapwriter = $this->exporter->get('format')->leap2a_writer();
+            $writingleap = true;
+        }
+
         if ($this->submissionid && $this->assessmentid) {
             $assessmenthtml = $this->prepare_assessment($this->assessment);
-            $content = $assessmenthtml;
+            $content = preg_replace('#<script(.*?)>(.*?)</script>#is', '', $assessmenthtml);
             $name = 'assessment.html';
+            if ($writingleap) {
+                $this->prepare_assessment_leap2a($leapwriter, $this->assessment, $content);
+                $content = $leapwriter->to_xml();
+                $name = $this->exporter->get('format')->manifest_name();
+            }
         }
         if ($this->submissionid && !$this->assessmentid) {
             $submissionhtml = $this->prepare_submission($this->submission);
             $content = $submissionhtml;
             $name = 'submission.html';
+            if ($writingleap) {
+                $this->prepare_submission_leap2a($leapwriter, $this->submission, $content);
+                $content = $leapwriter->to_xml();
+                $name = $this->exporter->get('format')->manifest_name();
+            }
         }
         $manifest = ($this->exporter->get('format') instanceof PORTFOLIO_FORMAT_RICH);
         $this->get('exporter')->write_new_file($content, $name, $manifest);
@@ -174,6 +191,8 @@ class mod_workshop_portfolio_caller extends portfolio_module_caller_base {
             $linkhtml   = html_writer::link($fileurl, $filename);
             $outputfiles .= html_writer::tag('li', $linkhtml, array('class' => $type));
 
+            $this->get('exporter')->copy_existing_file($file);
+
             if (!empty($CFG->enableplagiarism)) {
                 require_once($CFG->libdir.'/plagiarismlib.php');
                 $outputfiles .= plagiarism_get_links(array('userid' => $file->get_userid(),
@@ -185,6 +204,36 @@ class mod_workshop_portfolio_caller extends portfolio_module_caller_base {
         $output .= $outputfiles;
 
         return $output;
+    }
+
+    /**
+     * Helper function to add a leap2a entry element that corresponds to a submission,
+     * including any attachments.
+     *
+     * The entry/ies are added directly to the leapwriter, which is passed by ref.
+     *
+     * @param portfolio_format_leap2a_writer $leapwriter writer object to add entries to
+     * @param object $submission the stdclass object representing the database record
+     * @param string $submissionhtml the content of the submission
+     *
+     * @return int id of new entry
+     */
+    private function prepare_submission_leap2a(portfolio_format_leap2a_writer $leapwriter, $submission, $submissionhtml) {
+        global $DB;
+        $entry = new portfolio_format_leap2a_entry('workshopsubmission' . $submission->id,  $submission->title,
+            'resource', $submissionhtml);
+        $entry->published = $submission->timecreated;
+        $entry->updated = $submission->timemodified;
+        $entry->author = $DB->get_record('user', array('id' => $submission->authorid), 'id,firstname,lastname,email');
+
+        if (is_array($this->submissionfiles) && array_key_exists($submission->id, $this->submissionfiles)
+            && is_array($this->submissionfiles[$submission->id])) {
+            $leapwriter->link_files($entry, $this->submissionfiles[$submission->id], 'workshopsubmission'
+                . $submission->id . 'attachment');
+        }
+        $entry->add_category('web', 'resource_type');
+        $leapwriter->add_entry($entry);
+        return $entry->id;
     }
 
     /**
@@ -252,6 +301,7 @@ class mod_workshop_portfolio_caller extends portfolio_module_caller_base {
             }
         }
         $output .= html_writer::end_tag('div');
+
         if (!is_null($displayassessment->form)) {
             $output .= html_writer::tag("div", get_string('assessmentform', 'workshop'));
             $output .= html_writer::tag("div", self::moodleform($displayassessment->form));
@@ -265,18 +315,50 @@ class mod_workshop_portfolio_caller extends portfolio_module_caller_base {
             }
         }
 
-        $attachments = $displayassessment->get_overall_feedback_attachments();
+        $this->assessmentfiles = $displayassessment->get_overall_feedback_attachments();
 
-        if (!empty($attachments)) {
+        if (!empty($this->assessmentfiles)) {
             $files = '';
-            foreach ($attachments as $attachment) {
+            foreach ($this->assessmentfiles as $attachment) {
                 $link = html_writer::link($attachment->fileurl, substr($attachment->filepath.$attachment->filename, 1));
                 $files .= html_writer::tag('li', $link, array('class' => $attachment->mimetype));
+                $this->get('exporter')->copy_existing_file($attachment);
             }
             $output .= html_writer::tag('ul', $files, array('class' => 'files'));
         }
 
         return $output;
+    }
+
+
+    /**
+     * Helper function to add a leap2a entry element that corresponds to a assessment,
+     * including any attachments.
+     *
+     * The entry/ies are added directly to the leapwriter, which is passed by ref.
+     *
+     * @param portfolio_format_leap2a_writer $leapwriter writer object to add entries to
+     * @param object $assessment the stdclass object representing the database record
+     * @param string $assessmenthtml the content of the assessment
+     *
+     * @return int id of new entry
+     */
+    private function prepare_assessment_leap2a(portfolio_format_leap2a_writer $leapwriter, $assessment, $assessmenthtml) {
+        global $DB;
+        $entry = new portfolio_format_leap2a_entry('workshopassessment' . $assessment->id,
+            $assessment->title, 'resource', $assessmenthtml);
+        $entry->published = $assessment->timecreated;
+        $entry->updated = $assessment->timemodified;
+        $entry->author = $DB->get_record('user', array('id' => $assessment->reviewerid), 'id,firstname,lastname,email');
+
+        if (is_array($this->assessmentfiles) && array_key_exists($assessment->id, $this->assessmentfiles)
+            && is_array($this->assessmentfiles[$assessment->id])) {
+            $leapwriter->link_files($entry, $this->assessmentfiles[$assessment->id], 'workshopassessment'
+                . $assessment->id . 'attachment');
+        }
+        $entry->add_category('web', 'resource_type');
+        $leapwriter->add_entry($entry);
+        return $entry->id;
     }
 
     /**
@@ -286,7 +368,6 @@ class mod_workshop_portfolio_caller extends portfolio_module_caller_base {
      * @return string
      */
     public function get_return_url() {
-        global $CFG;
         $returnurl = new moodle_url('/mod/workshop/submission.php',
             array('cmid' => $this->cm->id));
         return $returnurl->out();
@@ -299,7 +380,6 @@ class mod_workshop_portfolio_caller extends portfolio_module_caller_base {
      * @return array
      */
     public function get_navigation() {
-        global $CFG;
         $link = new moodle_url('/mod/workshop/submission.php',
             array('cmid' => $this->cm->id));
         $navlinks = array();

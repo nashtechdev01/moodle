@@ -401,7 +401,12 @@ if (!$delete) {
     if($canexportownsubmission) {
         $button = new portfolio_add_button();
         $button->set_callback_options('mod_workshop_portfolio_caller', array('submissionid' => $submission->id), 'mod_workshop');
-        $button->set_formats(PORTFOLIO_FORMAT_PLAINHTML);
+        $fs = get_file_storage();
+        if ($files = $fs->get_area_files($workshop->context->id, 'mod_workshop', 'submission_attachment', $submission->id)) {
+            $button->set_formats(PORTFOLIO_FORMAT_RICHHTML);
+        } else {
+            $button->set_formats(PORTFOLIO_FORMAT_PLAINHTML);
+        }
         echo html_writer::start_tag('div', array('class' => 'singlebutton'));
         echo $button->to_html(PORTFOLIO_ADD_FULL_FORM, get_string('exportsubmission', 'workshop'));
         echo html_writer::end_tag('div');
@@ -451,7 +456,12 @@ if ($isreviewer) {
     if($canexportownsubmissionassessment) {
         $button = new portfolio_add_button();
         $button->set_callback_options('mod_workshop_portfolio_caller', array('submissionid' => $submission->id, 'assessmentid' => $assessment->id), 'mod_workshop');
-        $button->set_formats(PORTFOLIO_FORMAT_PLAINHTML);
+        $fs = get_file_storage();
+        if ($files = $fs->get_area_files($workshop->context->id, 'mod_workshop', 'overallfeedback_attachment', $assessment->id)) {
+            $button->set_formats(PORTFOLIO_FORMAT_RICHHTML);
+        } else {
+            $button->set_formats(PORTFOLIO_FORMAT_PLAINHTML);
+        }
         echo html_writer::start_tag('div', array('class' => 'singlebutton'));
         echo $button->to_html(PORTFOLIO_ADD_FULL_FORM, get_string('exportsubmissionassessment', 'workshop'));
         echo html_writer::end_tag('div');
@@ -494,7 +504,12 @@ if (has_capability('mod/workshop:viewallassessments', $workshop->context) or ($o
         if($canexportownsubmissionassessment) {
             $button = new portfolio_add_button();
             $button->set_callback_options('mod_workshop_portfolio_caller', array('submissionid' => $submission->id, 'assessmentid' => $assessment->id), 'mod_workshop');
-            $button->set_formats(PORTFOLIO_FORMAT_PLAINHTML);
+            $fs = get_file_storage();
+            if ($files = $fs->get_area_files($workshop->context->id, 'mod_workshop', 'overallfeedback_attachment', $assessment->id)) {
+                $button->set_formats(PORTFOLIO_FORMAT_RICHHTML);
+            } else {
+                $button->set_formats(PORTFOLIO_FORMAT_PLAINHTML);
+            }
             echo html_writer::start_tag('div', array('class' => 'singlebutton'));
             echo $button->to_html(PORTFOLIO_ADD_FULL_FORM, get_string('exportsubmissionassessment', 'workshop'));
             echo html_writer::end_tag('div');
