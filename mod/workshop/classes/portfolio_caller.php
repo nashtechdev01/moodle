@@ -75,7 +75,8 @@ class mod_workshop_portfolio_caller extends portfolio_module_caller_base {
             $this->assessment = new stdClass();
             $this->assessment = $assessments[$this->assessmentid];
             $fs = get_file_storage();
-            $this->assessmentfiles = $fs->get_area_files($this->workshop->context->id, 'mod_workshop', 'overallfeedback_attachment', $this->assessment->id);
+            $this->assessmentfiles = $fs->get_area_files($this->workshop->context->id, 'mod_workshop',
+                'overallfeedback_attachment', $this->assessment->id);
         }
         // Load data for export submission.
         if ($this->submissionid && !$this->assessmentid) {
@@ -188,8 +189,8 @@ class mod_workshop_portfolio_caller extends portfolio_module_caller_base {
                 }
                 $filepath   = $file->get_filepath();
                 $filename   = $file->get_filename();
-                $fileurl    = moodle_url::make_pluginfile_url($this->workshop->context->id, 'mod_workshop', 'submission_attachment',
-                    $submission->id, $filepath, $filename, true);
+                $fileurl    = moodle_url::make_pluginfile_url($this->workshop->context->id, 'mod_workshop',
+                    'submission_attachment', $submission->id, $filepath, $filename, true);
                 $type       = $file->get_mimetype();
                 $linkhtml   = html_writer::link($fileurl, $filename);
                 $outputfiles .= html_writer::tag('li', $linkhtml, array('class' => $type));
@@ -328,8 +329,8 @@ class mod_workshop_portfolio_caller extends portfolio_module_caller_base {
                 }
                 $filepath   = $file->get_filepath();
                 $filename   = $file->get_filename();
-                $fileurl    = moodle_url::make_pluginfile_url($this->workshop->context->id, 'mod_workshop', 'overallfeedback_attachment',
-                    $assessment->id, $filepath, $filename, true);
+                $fileurl    = moodle_url::make_pluginfile_url($this->workshop->context->id, 'mod_workshop',
+                    'overallfeedback_attachment', $assessment->id, $filepath, $filename, true);
                 $type       = $file->get_mimetype();
                 $linkhtml   = html_writer::link($fileurl, $filename);
                 $outputfiles .= html_writer::tag('li', $linkhtml, array('class' => $type));
