@@ -74,6 +74,8 @@ class mod_workshop_portfolio_caller extends portfolio_module_caller_base {
             $assessments    = $this->workshop->get_assessments_of_submission($this->submission->id);
             $this->assessment = new stdClass();
             $this->assessment = $assessments[$this->assessmentid];
+            $fs = get_file_storage();
+            $this->assessmentfiles = $fs->get_area_files($this->workshop->context->id, 'mod_workshop', 'overallfeedback_attachment', $this->assessment->id);
         }
         // Load data for export submission.
         if ($this->submissionid && !$this->assessmentid) {
@@ -178,30 +180,32 @@ class mod_workshop_portfolio_caller extends portfolio_module_caller_base {
         $content = format_text($submission->content, $submission->contentformat);
         $output .= html_writer::tag("div", $content);
 
-        $outputfiles = '';
-        foreach ($this->submissionfiles as $file) {
-            if ($file->is_directory()) {
-                continue;
-            }
-            $filepath   = $file->get_filepath();
-            $filename   = $file->get_filename();
-            $fileurl    = moodle_url::make_pluginfile_url($this->workshop->context->id, 'mod_workshop', 'submission_attachment',
-                $submission->id, $filepath, $filename, true);
-            $type       = $file->get_mimetype();
-            $linkhtml   = html_writer::link($fileurl, $filename);
-            $outputfiles .= html_writer::tag('li', $linkhtml, array('class' => $type));
+        if ($this->submissionfiles) {
+            $outputfiles = '';
+            foreach ($this->submissionfiles as $file) {
+                if ($file->is_directory()) {
+                    continue;
+                }
+                $filepath   = $file->get_filepath();
+                $filename   = $file->get_filename();
+                $fileurl    = moodle_url::make_pluginfile_url($this->workshop->context->id, 'mod_workshop', 'submission_attachment',
+                    $submission->id, $filepath, $filename, true);
+                $type       = $file->get_mimetype();
+                $linkhtml   = html_writer::link($fileurl, $filename);
+                $outputfiles .= html_writer::tag('li', $linkhtml, array('class' => $type));
 
-            $this->get('exporter')->copy_existing_file($file);
+                $this->get('exporter')->copy_existing_file($file);
 
-            if (!empty($CFG->enableplagiarism)) {
-                require_once($CFG->libdir.'/plagiarismlib.php');
-                $outputfiles .= plagiarism_get_links(array('userid' => $file->get_userid(),
-                    'file' => $file,
-                    'cmid' => $this->cmid,
-                    'course' => $this->cm->course));
+                if (!empty($CFG->enableplagiarism)) {
+                    require_once($CFG->libdir.'/plagiarismlib.php');
+                    $outputfiles .= plagiarism_get_links(array('userid' => $file->get_userid(),
+                        'file' => $file,
+                        'cmid' => $this->cm->id,
+                        'course' => $this->cm->course));
+                }
             }
+            $output .= $outputfiles;
         }
-        $output .= $outputfiles;
 
         return $output;
     }
@@ -247,6 +251,7 @@ class mod_workshop_portfolio_caller extends portfolio_module_caller_base {
      */
     private function prepare_assessment($assessment) {
         global $PAGE;
+        global $CFG;
         $strategy       = $this->workshop->grading_strategy_instance();
         $mform      = $strategy->get_assessment_form($PAGE->url, 'assessment', $assessment, false);
         $showreviewer   = has_capability('mod/workshop:viewreviewernames', $this->workshop->context);
@@ -315,16 +320,31 @@ class mod_workshop_portfolio_caller extends portfolio_module_caller_base {
             }
         }
 
-        $this->assessmentfiles = $displayassessment->get_overall_feedback_attachments();
+        if ($this->assessmentfiles) {
+            $outputfiles = '';
+            foreach ($this->assessmentfiles as $file) {
+                if ($file->is_directory()) {
+                    continue;
+                }
+                $filepath   = $file->get_filepath();
+                $filename   = $file->get_filename();
+                $fileurl    = moodle_url::make_pluginfile_url($this->workshop->context->id, 'mod_workshop', 'overallfeedback_attachment',
+                    $assessment->id, $filepath, $filename, true);
+                $type       = $file->get_mimetype();
+                $linkhtml   = html_writer::link($fileurl, $filename);
+                $outputfiles .= html_writer::tag('li', $linkhtml, array('class' => $type));
 
-        if (!empty($this->assessmentfiles)) {
-            $files = '';
-            foreach ($this->assessmentfiles as $attachment) {
-                $link = html_writer::link($attachment->fileurl, substr($attachment->filepath.$attachment->filename, 1));
-                $files .= html_writer::tag('li', $link, array('class' => $attachment->mimetype));
-                $this->get('exporter')->copy_existing_file($attachment);
+                $this->get('exporter')->copy_existing_file($file);
+
+                if (!empty($CFG->enableplagiarism)) {
+                    require_once($CFG->libdir.'/plagiarismlib.php');
+                    $outputfiles .= plagiarism_get_links(array('userid' => $file->get_userid(),
+                        'file' => $file,
+                        'cmid' => $this->cm->id,
+                        'course' => $this->cm->course));
+                }
             }
-            $output .= html_writer::tag('ul', $files, array('class' => 'files'));
+            $output .= $outputfiles;
         }
 
         return $output;
