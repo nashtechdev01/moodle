@@ -191,6 +191,8 @@ class mod_workshop_portfolio_caller extends portfolio_module_caller_base {
             $linkhtml   = html_writer::link($fileurl, $filename);
             $outputfiles .= html_writer::tag('li', $linkhtml, array('class' => $type));
 
+            $this->get('exporter')->copy_existing_file($file);
+
             if (!empty($CFG->enableplagiarism)) {
                 require_once($CFG->libdir.'/plagiarismlib.php');
                 $outputfiles .= plagiarism_get_links(array('userid' => $file->get_userid(),
@@ -320,6 +322,7 @@ class mod_workshop_portfolio_caller extends portfolio_module_caller_base {
             foreach ($this->assessmentfiles as $attachment) {
                 $link = html_writer::link($attachment->fileurl, substr($attachment->filepath.$attachment->filename, 1));
                 $files .= html_writer::tag('li', $link, array('class' => $attachment->mimetype));
+                $this->get('exporter')->copy_existing_file($attachment);
             }
             $output .= html_writer::tag('ul', $files, array('class' => 'files'));
         }
