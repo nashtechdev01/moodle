@@ -418,7 +418,6 @@ class mod_workshop_portfolio_caller extends portfolio_module_caller_base {
      * @return constant one of PORTFOLIO_TIME_XX
      */
     public function expected_time() {
-        // ...@Todo check for attachment size.
         return PORTFOLIO_TIME_LOW;
     }
 
