@@ -89,7 +89,7 @@ $canpublish     = has_capability('mod/workshop:publishsubmissions', $workshop->c
 $canoverride    = (($workshop->phase == workshop::PHASE_EVALUATION) and has_capability('mod/workshop:overridegrades', $workshop->context));
 $candeleteall   = has_capability('mod/workshop:deletesubmissions', $workshop->context);
 $canexportownsubmission = !empty($CFG->enableportfolios)
-    && (has_capability('mod/workshop:exportownsubmission', $workshop->context)) && $ownsubmission;
+    && (has_capability('mod/workshop:exportownsubmission', $workshop->context)) && $ownsubmission && !empty($submission->id);
 $canexportownsubmissionassessment = !empty($CFG->enableportfolios)
     && (has_capability('mod/workshop:exportownsubmission', $workshop->context))
     && (has_capability('mod/workshop:exportownsubmissionassessment', $workshop->context)) && $ownsubmission;
