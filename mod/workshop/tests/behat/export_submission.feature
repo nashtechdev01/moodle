@@ -31,9 +31,7 @@ Feature: Workshop submission export to portfolio
     And I expand "Plugins" node
     And I expand "Portfolios" node
     And I follow "Manage portfolios"
-   # And I set the following fields to these values:
-   #   | File download | Enabled and visible |
-    And I set the field "action" to "Enabled and visible" in "applyto3"
+    And I set portfolio instance "File download" to "Enabled and visible"
     And I log out
     # Teacher sets up assessment form and changes the phase to submission.
     And I log in as "teacher1"
