@@ -164,13 +164,14 @@ class behat_mod_workshop extends behat_base {
     /**
      * Configure portfolio plugin, set value for portfolio instance
      *
-     * @When /^I set portfolio instance "(?P<portfolio_instance_string>(?:[^"]|\\")*)" to "(?P<value_string>(?:[^"]|\\")*)"$/
+     * @When /^I set portfolio instance "(?P<portfolioinstance_string>(?:[^"]|\\")*)" to "(?P<value_string>(?:[^"]|\\")*)"$/
      * @param string $portfolioinstance
      * @param string $value
      */
     public function i_set_portfolio_instance_to($portfolioinstance, $value) {
-        $xpath = "//table[contains(@class, 'generaltable')]//tr//td[contains(text(), '" . $portfolioinstance . "')]/following-sibling::td//select";
+        $xpath = "//table[contains(@class, 'generaltable')]//tr//td[contains(text(), '"
+            . $portfolioinstance . "')]/following-sibling::td//select";
         $select = $this->find('xpath', $xpath);
-        $this->execute("behat_forms::i_set_the_field_to", array($select, $value));
+        $select->selectOption($value);
     }
 }
