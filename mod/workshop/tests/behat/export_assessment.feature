@@ -104,7 +104,7 @@ Feature: Workshop submission's assessment export to portfolio
     And I follow "Course1"
     And I follow "TestWorkshop"
     And I follow "My submission"
-    And I should see "Submission1"
+    Then I should see "Submission1"
     Then "Export assessment to portfolio" "button" should not exist
     And I log out
 
@@ -117,14 +117,14 @@ Feature: Workshop submission's assessment export to portfolio
     And I follow "Course1"
     And I follow "TestWorkshop"
     And I follow "My submission"
-    And I should see "Submission1"
-    And "Export assessment to portfolio" "button" should exist
+    Then I should see "Submission1"
+    Then "Export assessment to portfolio" "button" should exist
     And I click on "Export assessment to portfolio" "button"
     Then I should see "Available export formats"
     And I click on "Next" "button"
-    And I should see "Summary of your export"
+    Then I should see "Summary of your export"
     And I click on "Continue" "button"
-    And I should see "Return to where you were"
+    Then I should see "Return to where you were"
     And I log out
 
   Scenario: Students can not export to portfolio the assessment content when viewing submission of other people
@@ -136,6 +136,6 @@ Feature: Workshop submission's assessment export to portfolio
     And I follow "Course1"
     And I follow "TestWorkshop"
     And I follow "Submission1"
-    And I should see "Assessment"
+    Then I should see "Assessment"
     Then "Export assessment to portfolio" "button" should not exist
     And I log out

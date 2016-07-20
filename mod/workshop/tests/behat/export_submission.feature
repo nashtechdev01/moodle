@@ -88,7 +88,7 @@ Feature: Workshop submission export to portfolio
     And I follow "Course1"
     And I follow "TestWorkshop"
     And I follow "My submission"
-    And I should see "Submission1"
+    Then I should see "Submission1"
     Then "Export submission to portfolio" "button" should not exist
     And I log out
 
@@ -97,12 +97,12 @@ Feature: Workshop submission export to portfolio
     And I follow "Course1"
     And I follow "TestWorkshop"
     When I follow "My submission"
-    And I should see "Submission1"
-    And "Export submission to portfolio" "button" should exist
+    Then I should see "Submission1"
+    Then "Export submission to portfolio" "button" should exist
     And I click on "Export submission to portfolio" "button"
-    And I should see "Available export formats"
+    Then I should see "Available export formats"
     And I click on "Next" "button"
-    And I should see "Summary of your export"
+    Then I should see "Summary of your export"
     And I click on "Continue" "button"
     Then I should see "Return to where you were"
     And I log out
