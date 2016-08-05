@@ -44,48 +44,76 @@ class workshop_accumulative_assessment_form extends workshop_assessment_form {
     protected function definition_inner(&$mform) {
         $fields     = $this->_customdata['fields'];
         $current    = $this->_customdata['current'];
+        $assessmentsofdimension    = $this->_customdata['assessmentsofdimension'];
         $nodims     = $this->_customdata['nodims'];     // number of assessment dimensions
 
-        $mform->addElement('hidden', 'nodims', $nodims);
-        $mform->setType('nodims', PARAM_INT);
+        if($assessmentsofdimension) {
+            for ($i = 0; $i < $nodims; $i++) {
+                // dimension header
+                $dimtitle = get_string('dimensionnumber', 'workshopform_accumulative', $i + 1);
+                $mform->addElement('header', 'dimensionhdr__idx_' . $i, $dimtitle);
 
-        // minimal grade value to select - used by the 'compare' rule below
-        // (just an implementation detail to make the rule work, this element is
-        // not processed by the server)
-        $mform->addElement('hidden', 'minusone', -1);
-        $mform->setType('minusone', PARAM_INT);
+                $assessments = $assessmentsofdimension;
+                // dimension description
+                $desc = '<div id="id_dim_' . $fields->{'dimensionid__idx_' . $i} . '_desc" class="fitem description accumulative">' . "\n";
+                $desc .= format_text($fields->{'description__idx_' . $i}, $fields->{'description__idx_' . $i . 'format'});
+                $desc .= "\n</div>";
+                $mform->addElement('html', $desc);
+                for ($j = 0; $j < count($assessments); $j++) {
+                    $label = get_string('dimensiongrade', 'workshopform_accumulative');
+                    $options = make_grades_menu($fields->{'grade__idx_' . $i});
+                    $options = array('-1' => get_string('choosedots')) + $options;
+                    $mform->addElement('select', 'grade__idx_' . $j, $label, $options);
+                    $mform->addRule(array('grade__idx_' . $j, 'minusone'), get_string('mustchoosegrade', 'workshopform_accumulative'), 'compare', 'gt');
 
-        for ($i = 0; $i < $nodims; $i++) {
-            // dimension header
-            $dimtitle = get_string('dimensionnumber', 'workshopform_accumulative', $i+1);
-            $mform->addElement('header', 'dimensionhdr__idx_'.$i, $dimtitle);
+                    // comment
+                    $label = get_string('dimensioncomment', 'workshopform_accumulative');
+                    $mform->addElement('textarea', 'peercomment__idx_' . $j, $label, array('cols' => 60, 'rows' => 5));
+                }
+            }
+            $this->set_data($current);
+        }else {
+            $mform->addElement('hidden', 'nodims', $nodims);
+            $mform->setType('nodims', PARAM_INT);
 
-            // dimension id
-            $mform->addElement('hidden', 'dimensionid__idx_'.$i, $fields->{'dimensionid__idx_'.$i});
-            $mform->setType('dimensionid__idx_'.$i, PARAM_INT);
+            // minimal grade value to select - used by the 'compare' rule below
+            // (just an implementation detail to make the rule work, this element is
+            // not processed by the server)
+            $mform->addElement('hidden', 'minusone', -1);
+            $mform->setType('minusone', PARAM_INT);
 
-            // grade id
-            $mform->addElement('hidden', 'gradeid__idx_'.$i);   // value set by set_data() later
-            $mform->setType('gradeid__idx_'.$i, PARAM_INT);
+            for ($i = 0; $i < $nodims; $i++) {
+                // dimension header
+                $dimtitle = get_string('dimensionnumber', 'workshopform_accumulative', $i + 1);
+                $mform->addElement('header', 'dimensionhdr__idx_' . $i, $dimtitle);
 
-            // dimension description
-            $desc = '<div id="id_dim_'.$fields->{'dimensionid__idx_'.$i}.'_desc" class="fitem description accumulative">'."\n";
-            $desc .= format_text($fields->{'description__idx_'.$i}, $fields->{'description__idx_'.$i.'format'});
-            $desc .= "\n</div>";
-            $mform->addElement('html', $desc);
+                // dimension id
+                $mform->addElement('hidden', 'dimensionid__idx_' . $i, $fields->{'dimensionid__idx_' . $i});
+                $mform->setType('dimensionid__idx_' . $i, PARAM_INT);
 
-            // grade for this aspect
-            $label = get_string('dimensiongrade', 'workshopform_accumulative');
-            $options = make_grades_menu($fields->{'grade__idx_' . $i});
-            $options = array('-1' => get_string('choosedots')) + $options;
-            $mform->addElement('select', 'grade__idx_' . $i, $label, $options);
-            $mform->addRule(array('grade__idx_' . $i, 'minusone') , get_string('mustchoosegrade', 'workshopform_accumulative'), 'compare', 'gt');
+                // grade id
+                $mform->addElement('hidden', 'gradeid__idx_' . $i);   // value set by set_data() later
+                $mform->setType('gradeid__idx_' . $i, PARAM_INT);
 
-            // comment
-            $label = get_string('dimensioncomment', 'workshopform_accumulative');
-            //$mform->addElement('editor', 'peercomment__idx_' . $i, $label, null, array('maxfiles' => 0));
-            $mform->addElement('textarea', 'peercomment__idx_' . $i, $label, array('cols' => 60, 'rows' => 5));
+                // dimension description
+                $desc = '<div id="id_dim_' . $fields->{'dimensionid__idx_' . $i} . '_desc" class="fitem description accumulative">' . "\n";
+                $desc .= format_text($fields->{'description__idx_' . $i}, $fields->{'description__idx_' . $i . 'format'});
+                $desc .= "\n</div>";
+                $mform->addElement('html', $desc);
+
+                // grade for this aspect
+                $label = get_string('dimensiongrade', 'workshopform_accumulative');
+                $options = make_grades_menu($fields->{'grade__idx_' . $i});
+                $options = array('-1' => get_string('choosedots')) + $options;
+                $mform->addElement('select', 'grade__idx_' . $i, $label, $options);
+                $mform->addRule(array('grade__idx_' . $i, 'minusone'), get_string('mustchoosegrade', 'workshopform_accumulative'), 'compare', 'gt');
+
+                // comment
+                $label = get_string('dimensioncomment', 'workshopform_accumulative');
+                //$mform->addElement('editor', 'peercomment__idx_' . $i, $label, null, array('maxfiles' => 0));
+                $mform->addElement('textarea', 'peercomment__idx_' . $i, $label, array('cols' => 60, 'rows' => 5));
+            }
+            $this->set_data($current);
         }
-        $this->set_data($current);
     }
 }

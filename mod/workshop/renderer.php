@@ -616,84 +616,102 @@ class mod_workshop_renderer extends plugin_renderer_base {
     protected function render_workshop_assessment(workshop_assessment $assessment) {
 
         $o = ''; // output HTML code
-        $anonymous = is_null($assessment->reviewer);
-        $classes = 'assessment-full';
-        if ($anonymous) {
-            $classes .= ' anonymous';
-        }
-
-        $o .= $this->output->container_start($classes);
-        $o .= $this->output->container_start('header');
-
-        if (!empty($assessment->title)) {
-            $title = s($assessment->title);
-        } else {
-            $title = get_string('assessment', 'workshop');
-        }
-        if (($assessment->url instanceof moodle_url) and ($this->page->url != $assessment->url)) {
-            $o .= $this->output->container(html_writer::link($assessment->url, $title), 'title');
-        } else {
-            $o .= $this->output->container($title, 'title');
-        }
-
-        if (!$anonymous) {
-            $reviewer   = $assessment->reviewer;
-            $userpic    = $this->output->user_picture($reviewer, array('courseid' => $this->page->course->id, 'size' => 32));
-
-            $userurl    = new moodle_url('/user/view.php',
-                                       array('id' => $reviewer->id, 'course' => $this->page->course->id));
-            $a          = new stdClass();
-            $a->name    = fullname($reviewer);
-            $a->url     = $userurl->out();
-            $byfullname = get_string('assessmentby', 'workshop', $a);
-            $oo         = $this->output->container($userpic, 'picture');
-            $oo        .= $this->output->container($byfullname, 'fullname');
-
-            $o .= $this->output->container($oo, 'reviewer');
-        }
-
-        if (is_null($assessment->realgrade)) {
-            $o .= $this->output->container(
-                get_string('notassessed', 'workshop'),
-                'grade nograde'
-            );
-        } else {
-            $a              = new stdClass();
-            $a->max         = $assessment->maxgrade;
-            $a->received    = $assessment->realgrade;
-            $o .= $this->output->container(
-                get_string('gradeinfo', 'workshop', $a),
-                'grade'
-            );
-
-            if (!is_null($assessment->weight) and $assessment->weight != 1) {
-                $o .= $this->output->container(
-                    get_string('weightinfo', 'workshop', $assessment->weight),
-                    'weight'
-                );
-            }
-        }
-
-        $o .= $this->output->container_start('actions');
-        foreach ($assessment->actions as $action) {
-            $o .= $this->output->single_button($action->url, $action->label, $action->method);
-        }
-        $o .= $this->output->container_end(); // actions
-
-        $o .= $this->output->container_end(); // header
-
-        if (!is_null($assessment->form)) {
-            $o .= print_collapsible_region_start('assessment-form-wrapper', uniqid('workshop-assessment'),
+        if($assessment->viewbyaspect) { //overwrite render
+            $classes = 'assessment-full';
+            $o .= $this->output->container_start($classes);
+            $o .= $this->output->container_start('header');
+            $o .= $this->output->container_end(); // header
+            if (!is_null($assessment->form)) {
+                $o .= print_collapsible_region_start('assessment-form-wrapper', uniqid('workshop-assessment'),
                     get_string('assessmentform', 'workshop'), '', false, true);
-            $o .= $this->output->container(self::moodleform($assessment->form), 'assessment-form');
-            $o .= print_collapsible_region_end(true);
+                $o .= $this->output->container(self::moodleform($assessment->form), 'assessment-form');
+                $o .= print_collapsible_region_end(true);
 
-            if (!$assessment->form->is_editable()) {
-                $o .= $this->overall_feedback($assessment);
+//                if (!$assessment->form->is_editable()) {
+//                    $o .= $this->overall_feedback($assessment);
+//                }
             }
-        }
+            $o .= $this->output->container_end(); // main wrapper
+        }else {
+            $anonymous = is_null($assessment->reviewer);
+            $classes = 'assessment-full';
+            if ($anonymous) {
+                $classes .= ' anonymous';
+            }
 
-        $o .= $this->output->container_end(); // main wrapper
+            $o .= $this->output->container_start($classes);
+            $o .= $this->output->container_start('header');
+
+            if (!empty($assessment->title)) {
+                $title = s($assessment->title);
+            } else {
+                $title = get_string('assessment', 'workshop');
+            }
+            if (($assessment->url instanceof moodle_url) and ($this->page->url != $assessment->url)) {
+                $o .= $this->output->container(html_writer::link($assessment->url, $title), 'title');
+            } else {
+                $o .= $this->output->container($title, 'title');
+            }
+
+            if (!$anonymous) {
+                $reviewer = $assessment->reviewer;
+                $userpic = $this->output->user_picture($reviewer, array('courseid' => $this->page->course->id, 'size' => 32));
+
+                $userurl = new moodle_url('/user/view.php',
+                    array('id' => $reviewer->id, 'course' => $this->page->course->id));
+                $a = new stdClass();
+                $a->name = fullname($reviewer);
+                $a->url = $userurl->out();
+                $byfullname = get_string('assessmentby', 'workshop', $a);
+                $oo = $this->output->container($userpic, 'picture');
+                $oo .= $this->output->container($byfullname, 'fullname');
+
+                $o .= $this->output->container($oo, 'reviewer');
+            }
+
+            if (is_null($assessment->realgrade)) {
+                $o .= $this->output->container(
+                    get_string('notassessed', 'workshop'),
+                    'grade nograde'
+                );
+            } else {
+                $a = new stdClass();
+                $a->max = $assessment->maxgrade;
+                $a->received = $assessment->realgrade;
+                $o .= $this->output->container(
+                    get_string('gradeinfo', 'workshop', $a),
+                    'grade'
+                );
+
+                if (!is_null($assessment->weight) and $assessment->weight != 1) {
+                    $o .= $this->output->container(
+                        get_string('weightinfo', 'workshop', $assessment->weight),
+                        'weight'
+                    );
+                }
+            }
+
+            $o .= $this->output->container_start('actions');
+            foreach ($assessment->actions as $action) {
+                $o .= $this->output->single_button($action->url, $action->label, $action->method);
+            }
+            $o .= $this->output->container_end(); // actions
+
+            $o .= $this->output->container_end(); // header
+
+            if (!is_null($assessment->form)) {
+                $o .= print_collapsible_region_start('assessment-form-wrapper', uniqid('workshop-assessment'),
+                    get_string('assessmentform', 'workshop'), '', false, true);
+                $o .= $this->output->container(self::moodleform($assessment->form), 'assessment-form');
+                $o .= print_collapsible_region_end(true);
+
+                if (!$assessment->form->is_editable()) {
+                    $o .= $this->overall_feedback($assessment);
+                }
+            }
+
+            $o .= $this->output->container_end(); // main wrapper
+        }
 
         return $o;
     }

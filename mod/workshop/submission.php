@@ -33,6 +33,7 @@ $edit = optional_param('edit', false, PARAM_BOOL); // Open the page for editing?
 $assess = optional_param('assess', false, PARAM_BOOL); // Instant assessment required.
 $delete = optional_param('delete', false, PARAM_BOOL); // Submission removal requested.
 $confirm = optional_param('confirm', false, PARAM_BOOL); // Submission removal request confirmed.
+$viewbyaspect = optional_param('viewbyaspect', false, PARAM_BOOL); // View by aspect
 
 $cm = get_coursemodule_from_id('workshop', $cmid, 0, false, MUST_EXIST);
 $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
@@ -444,7 +445,8 @@ if (has_capability('mod/workshop:viewallassessments', $workshop->context) or ($o
             // students do not see peer-assessment that are not graded yet
             continue;
         }
-        $mform      = $strategy->get_assessment_form($PAGE->url, 'assessment', $assessment, false);
+        $flag = $viewbyaspect;
+        $mform      = $strategy->get_assessment_form($PAGE->url, 'assessment', $assessment, false, array(), $flag);
         $options    = array(
             'showreviewer'  => $showreviewer,
             'showauthor'    => $showauthor,
@@ -455,6 +457,7 @@ if (has_capability('mod/workshop:viewallassessments', $workshop->context) or ($o
         if ($canoverride) {
             $displayassessment->add_action($workshop->assess_url($assessment->id), get_string('assessmentsettings', 'workshop'));
         }
+        $displayassessment->viewbyaspect = $flag;
         echo $output->render($displayassessment);
 
         if ($workshop->phase == workshop::PHASE_CLOSED and has_capability('mod/workshop:viewallassessments', $workshop->context)) {
@@ -462,6 +465,9 @@ if (has_capability('mod/workshop:viewallassessments', $workshop->context) or ($o
                 echo $output->render(new workshop_feedback_reviewer($assessment));
             }
         }
+
+        if($flag)
+            break;
     }
 }
 

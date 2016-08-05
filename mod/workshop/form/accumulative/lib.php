@@ -204,7 +204,7 @@ class workshop_accumulative_strategy implements workshop_strategy {
      * @param bool $editable
      * @param array $options
      */
-    public function get_assessment_form(moodle_url $actionurl=null, $mode='preview', stdclass $assessment=null, $editable=true, $options=array()) {
+    public function get_assessment_form(moodle_url $actionurl=null, $mode='preview', stdclass $assessment=null, $editable=true, $options=array(), $viewbyaspect = false) {
         global $CFG;    // needed because the included files use it
         global $PAGE;
         global $DB;
@@ -225,10 +225,17 @@ class workshop_accumulative_strategy implements workshop_strategy {
             $current = new stdclass();
             for ($i = 0; $i < $nodimensions; $i++) {
                 $dimid = $fields->{'dimensionid__idx_'.$i};
-                if (isset($grades[$dimid])) {
+                if (isset($grades[$dimid]) && $viewbyaspect === false) {
                     $current->{'gradeid__idx_'.$i}      = $grades[$dimid]->id;
                     $current->{'grade__idx_'.$i}        = $grades[$dimid]->grade;
                     $current->{'peercomment__idx_'.$i}  = $grades[$dimid]->peercomment;
+                } else {
+                    $assessmentsofdimension = $this->get_current_dimension_data($dimid);
+                    for($j = 0; $j < count($assessmentsofdimension); $j++) {
+                        $current->{'gradeid__idx_' . $i} = $grades[$dimid]->id;
+                        $current->{'grade__idx_' . $i} = $grades[$dimid]->grade;
+                        $current->{'peercomment__idx_' . $i} = $grades[$dimid]->peercomment;
+                    }
                 }
             }
         }
@@ -243,6 +250,8 @@ class workshop_accumulative_strategy implements workshop_strategy {
         $customdata['nodims']   = $nodimensions;
         $customdata['fields']   = $fields;
         $customdata['current']  = isset($current) ? $current : null;
+        //quang le
+        $customdata['assessmentsofdimension']  = isset($assessmentsofdimension) ? $assessmentsofdimension : null;
         $attributes = array('class' => 'assessmentform accumulative');
 
         return new workshop_accumulative_assessment_form($actionurl, $customdata, 'post', '', $attributes, $editable);
@@ -497,6 +506,22 @@ class workshop_accumulative_strategy implements workshop_strategy {
         $params = array_merge($params, $dimparams);
 
         return $DB->get_records_sql($sql, $params);
+    }
+
+    /**
+     * @param $dimensionid
+     * @return array
+     */
+    protected  function get_current_dimension_data($dimensionid) {
+        global  $DB;
+
+        $sql = "SELECT wg.*
+                  FROM {workshop_grades} wg
+                 WHERE dimensionid = :dimensionid AND strategy= :strategy";
+        $params = array('dimensionid' => $dimensionid, 'strategy' => 'accumulative');
+
+        return $DB->get_records_sql($sql, $params);
+
     }
 
     /**
