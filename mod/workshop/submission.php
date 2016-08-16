@@ -403,7 +403,9 @@ if (!$delete) {
         $button = new portfolio_add_button();
         $button->set_callback_options('mod_workshop_portfolio_caller', array('submissionid' => $submission->id), 'mod_workshop');
         $fs = get_file_storage();
-        if ($files = $fs->get_area_files($workshop->context->id, 'mod_workshop', 'submission_attachment', $submission->id)) {
+        $files = array_merge($fs->get_area_files($workshop->context->id, 'mod_workshop', 'submission_attachment', $submission->id)
+            , $fs->get_area_files($workshop->context->id, 'mod_workshop', 'submission_content', $submission->id));
+        if ($files) {
             $button->set_formats(PORTFOLIO_FORMAT_RICHHTML);
         } else {
             $button->set_formats(PORTFOLIO_FORMAT_PLAINHTML);

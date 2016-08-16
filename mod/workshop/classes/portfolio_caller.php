@@ -116,8 +116,11 @@ class mod_workshop_portfolio_caller extends portfolio_module_caller_base {
         // Load data for export submission.
         if ($this->submissionid && !$this->assessmentid) {
             $fs = get_file_storage();
-            $this->submissionfiles  = $fs->get_area_files($this->workshop->context->id,
+            $submissioncontentfiles = $fs->get_area_files($this->workshop->context->id,
+                'mod_workshop', 'submission_content', $this->submissionid);
+            $submissionattachmentfiles = $fs->get_area_files($this->workshop->context->id,
                 'mod_workshop', 'submission_attachment', $this->submissionid);
+            $this->submissionfiles = array_merge($submissioncontentfiles, $submissionattachmentfiles);
 
             // Check anonymity of exported, show author or not.
             $ispublished    = ($this->workshop->phase == workshop::PHASE_CLOSED
@@ -212,9 +215,11 @@ class mod_workshop_portfolio_caller extends portfolio_module_caller_base {
             $output .= html_writer::tag("div", $modified, array('style' => 'font-size:x-small'));
         }
         $output .= html_writer::end_tag('div');
+        $format = $this->get('exporter')->get('format');
         $content = format_text($submission->content, $submission->contentformat);
+        $content = portfolio_rewrite_pluginfile_urls($content, $this->workshop->context->id, 'mod_workshop',
+            'submission_content', $submission->id, $format);
         $output .= html_writer::tag("div", $content);
-
         if ($this->submissionfiles) {
             $outputfiles = '';
             foreach ($this->submissionfiles as $file) {
@@ -224,7 +229,7 @@ class mod_workshop_portfolio_caller extends portfolio_module_caller_base {
                 $filepath   = $file->get_filepath();
                 $filename   = $file->get_filename();
                 $fileurl    = moodle_url::make_pluginfile_url($this->workshop->context->id, 'mod_workshop',
-                    'submission_attachment', $submission->id, $filepath, $filename, true);
+                    $file->get_filearea(), $submission->id, $filepath, $filename, true);
                 $type       = $file->get_mimetype();
                 $linkhtml   = html_writer::link($fileurl, $filename);
                 $outputfiles .= html_writer::tag('li', $linkhtml, array('class' => $type));
