@@ -3642,7 +3642,7 @@ abstract class workshop_assessment_base {
     protected $fields = array();
 
     /** @var workshop */
-    protected $workshop;
+    public $workshop;
 
     /**
      * Copies the properties of the given database record into properties of $this instance
