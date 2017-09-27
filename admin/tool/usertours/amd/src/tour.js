@@ -959,14 +959,38 @@ Tour.prototype.handleKeyDown = function (e) {
                 } else {
                     if (e.shiftKey) {
                         // Focus on the last tabbable node in the step.
-                        this.currentStepNode.find(tabbableSelector).last().focus();
+                        var dialogContainer = $('span[data-flexitour="container"]');
+                        if (dialogContainer && activeElement.is(dialogContainer) && stepTarget) {
+                            var targetChildrens = stepTarget.find(tabbableSelector);
+                            if (targetChildrens.length == 0) {
+                                stepTarget.focus();
+                            } else {
+                                for (var i = targetChildrens.length - 1; i >= 0; i--) {
+                                    var item = $(targetChildrens[i]);
+                                    if (!item.is(':disabled') && !item.is(':hidden')) {
+                                        item.focus();
+                                        break;
+                                    }
+                                }
+                                targetChildrens.last().focus();
+                            }
+                        } else {
+                            this.currentStepNode.find(tabbableSelector).last().focus();
+                        }
                     } else {
                         if (this.currentStepConfig.isOrphan) {
                             // Focus on the step - there is no target.
                             this.currentStepNode.focus();
                         } else {
-                            // Focus on the step target.
-                            stepTarget.focus();
+                            // Find "End tour" button.
+                            var endTourButton = $('.modal-footer > button[data-role="end"]');
+                            if (endTourButton && !endTourButton.is(activeElement)) {
+                                // Focus back to modal.
+                                $('span[data-flexitour="container"]').focus();
+                            } else {
+                                // Focus on the step target.
+                                stepTarget.focus();
+                            }
                         }
                     }
                 }

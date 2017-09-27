@@ -89,4 +89,14 @@ class behat_tool_usertours extends behat_base {
                 ])
             ]);
     }
+
+    /**
+     * Enable a tour.
+     *
+     * @When /^I enable "(?P<element_string>(?:[^"]|\\")*)" tour$/
+     * @param string $tourname The name of the tour to be enabled.
+     */
+    public function i_enable_tour($tourname) {
+        $this->execute('behat_general::i_click_on_in_the', ['.inplaceeditable-toggle', 'css_element', $tourname, 'table_row']);
+    }
 }
