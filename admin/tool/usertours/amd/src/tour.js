@@ -24,7 +24,7 @@
  * @param   {object}    config  The configuration object.
  */
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 function Tour(config) {
     this.init(config);
@@ -619,26 +619,43 @@ Tour.prototype.addEventHandler = function (eventName, handler) {
  */
 Tour.prototype.processStepListeners = function (stepConfig) {
     this.listeners.push(
-    // Next/Previous buttons.
-    {
-        node: this.currentStepNode,
-        args: ['click', '[data-role="next"]', $.proxy(this.next, this)]
-    }, {
-        node: this.currentStepNode,
-        args: ['click', '[data-role="previous"]', $.proxy(this.previous, this)]
-    },
+        // Next/Previous buttons.
+        {
+            node: this.currentStepNode,
+            args: ['click', '[data-role="next"]', $.proxy(this.next, this)]
+        }, {
+            node: this.currentStepNode,
+            args: ['click', '[data-role="previous"]', $.proxy(this.previous, this)]
+        },
 
-    // Close and end tour buttons.
-    {
-        node: this.currentStepNode,
-        args: ['click', '[data-role="end"]', $.proxy(this.endTour, this)]
-    },
+        // Close and end tour buttons.
+        {
+            node: this.currentStepNode,
+            args: ['click', '[data-role="end"]', $.proxy(this.endTour, this)]
+        },
 
-    // Keypresses.
-    {
-        node: $('body'),
-        args: ['keydown', $.proxy(this.handleKeyDown, this)]
-    });
+        // Click backdrop and hide tour.
+        {
+            node: $('[data-flexitour="backdrop"]'),
+            args: ['click', $.proxy(this.hide, this)]
+        },
+
+        // Click out and hide tour without backdrop.
+        {
+            node: $('body'),
+            args: ['click', $.proxy(function (e) {
+                // Handle click in or click out tour content,
+                // if click out, hide tour.
+                if (!this.currentStepNode.is(e.target) && $(e.target).closest('[data-role="flexitour-step"]').length === 0) {
+                    this.hide();
+                }}, this)]
+        },
+
+        // Keypresses.
+        {
+            node: $('body'),
+            args: ['keydown', $.proxy(this.handleKeyDown, this)]
+        });
 
     if (stepConfig.moveOnClick) {
         var targetNode = this.getStepTarget(stepConfig);
@@ -773,12 +790,8 @@ Tour.prototype.addStepToPage = function (stepConfig) {
         // Add the backdrop.
         this.positionBackdrop(stepConfig);
 
-        if (stepConfig.attachPoint === 'append') {
-            stepConfig.attachTo.append(currentStepNode);
-            this.currentStepNode = currentStepNode;
-        } else {
-            this.currentStepNode = currentStepNode.insertAfter(stepConfig.attachTo);
-        }
+        $(document.body).append(currentStepNode);
+        this.currentStepNode = currentStepNode;
 
         // Ensure that the step node is positioned.
         // Some situations mean that the value is not properly calculated without this step.
@@ -807,7 +820,7 @@ Tour.prototype.addStepToPage = function (stepConfig) {
         currentStepNode.addClass('orphan');
 
         // It lives in the body.
-        stepConfig.attachTo.append(currentStepNode);
+        $(document.body).append(currentStepNode);
         this.currentStepNode = currentStepNode;
 
         this.currentStepNode.offset(this.calculateStepPositionInPage());
@@ -908,7 +921,7 @@ Tour.prototype.announceStep = function (stepConfig) {
  * @param   {EventFacade} e
  */
 Tour.prototype.handleKeyDown = function (e) {
-    var tabbableSelector = 'a[href], link[href], [draggable=true], [contenteditable=true], :input:enabled, [tabindex], button';
+    var tabbableSelector = 'a[href], link[href], [draggable=true], [contenteditable=true], :input:enabled, [tabindex], button:enabled';
     switch (e.keyCode) {
         case 27:
             this.endTour();
@@ -927,8 +940,17 @@ Tour.prototype.handleKeyDown = function (e) {
                 var activeElement = $(document.activeElement);
                 var stepTarget = this.getStepTarget(this.currentStepConfig);
                 var tabbableNodes = $(tabbableSelector);
+                var dialogContainer = $('span[data-flexitour="container"]');
                 var currentIndex = void 0;
-                tabbableNodes.filter(function (index, element) {
+                // Filter out element which is not belong to target section or dialogue.
+                if (stepTarget) {
+                    tabbableNodes = tabbableNodes.filter(function (index, element) {
+                        return stepTarget != null && (stepTarget.has(element).length || dialogContainer.has(element).length || stepTarget.is(element) || dialogContainer.is(element));
+                    });
+                }
+
+                // Find index of focusing element.
+                tabbableNodes.each(function (index, element) {
                     if (activeElement.is(element)) {
                         currentIndex = index;
                         return false;
@@ -938,7 +960,7 @@ Tour.prototype.handleKeyDown = function (e) {
                 var nextIndex = void 0;
                 var nextNode = void 0;
                 var focusRelevant = void 0;
-                if (currentIndex) {
+                if (currentIndex != void 0) {
                     var direction = 1;
                     if (e.shiftKey) {
                         direction = -1;
@@ -1094,6 +1116,16 @@ Tour.prototype.hide = function (transition) {
         $(this).remove();
     });
 
+    // Remove aria-describedby and tabindex attributes.
+    if (this.currentStepNode && this.currentStepNode.length) {
+        var stepId = this.currentStepNode.attr('id');
+        if (stepId) {
+            var currentStepElement = '[aria-describedby="' + stepId + '-body"]';
+            $(currentStepElement).removeAttr('tabindex');
+            $(currentStepElement).removeAttr('aria-describedby');
+        }
+    }
+
     // Reset the listeners.
     this.resetStepListeners();
 
@@ -1231,11 +1263,6 @@ Tour.prototype.positionStep = function (stepConfig) {
         }
     };
 
-    var boundaryElement = target.closest('section');
-    if (boundaryElement.length) {
-        config.boundariesElement = boundaryElement[0];
-    }
-
     var background = $('[data-flexitour="step-background"]');
     if (background.length) {
         target = background;
@@ -1311,6 +1338,8 @@ Tour.prototype.positionBackdrop = function (stepConfig) {
             var targetPosition = this.calculatePosition(targetNode);
             if (targetPosition === 'fixed') {
                 background.css('top', 0);
+            } else if (targetPosition === 'absolute') {
+                background.css('position', 'fixed');
             }
 
             var fader = background.clone();
