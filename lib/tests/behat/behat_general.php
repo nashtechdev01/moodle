@@ -1635,4 +1635,95 @@ class behat_general extends behat_base {
 
         throw new \Moodle\BehatExtension\Exception\SkippedException();
     }
+
+    /**
+     * Checks focus is with the given element.
+     *
+     * @Then /^the focussed element should( not)? be "(?P<node_string>(?:[^"]|\\")*)" "(?P<node_selector_string>[^"]*)"$/
+     * @param string $not optional step verifier
+     * @param string $nodeelement Element identifier
+     * @param string $nodeselectortype Element type
+     * @throws ErrorException If not using JavaScript
+     * @throws ExpectationException
+     */
+    public function the_focussed_element_should_be($not, $nodeelement, $nodeselectortype) {
+        if (!$this->running_javascript()) {
+            throw new ErrorException('Checking focus on an element requires JavaScript');
+        }
+        list($a, $b) = $this->transform_selector($nodeselectortype, $nodeelement);
+        $element = $this->find($a, $b);
+        $xpath = addslashes_js($element->getXpath());
+        $script = 'window.behatStored = window.behatStored || {};' . 'window.behatStored.focusTarget = document.evaluate("' . $xpath . '", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;';
+        $this->getSession()->getDriver()->executeScript($script);
+        $script = ' return (function() { return document.activeElement === window.behatStored.focusTarget; })(); ';
+        $targetisfocussed = $this->getSession()->evaluateScript($script);
+        if ($not == ' not') {
+            if ($targetisfocussed) {
+                throw new ExpectationException("$nodeelement $nodeselectortype is focused", $this->getSession());
+            }
+        } else {
+            if (!$targetisfocussed) {
+                throw new ExpectationException("$nodeelement $nodeselectortype is not focused", $this->getSession());
+            }
+        }
+    }
+    
+    /**
+     * Checks focus is with the given element.
+     *
+     * @Then /^the focussed element should( not)? be "(?P<node_string>(?:[^"]|\\")*)" "(?P<node_selector_string>[^"]*)" in the "(?P<element_container_string>(?:[^"]|\\")*)" "(?P<text_selector_string>[^"]*)"$/
+     * @param string $not optional step verifier
+     * @param string $nodeelement Element identifier
+     * @param string $nodeselectortype Element type
+     * @param string $nodeelement Element we look in
+     * @param string $nodeselectortype The type of selector where we look in
+     * @throws ErrorException If not using JavaScript
+     * @throws ExpectationException
+     */
+    public function the_focussed_element_should_be_in_the($not, $element, $selectortype, $nodeelement, $nodeselectortype) {
+        if (!$this->running_javascript()) {
+            throw new ErrorException('Checking focus on an element requires JavaScript');
+        }
+        $element = $this->get_node_in_container($selectortype, $element, $nodeselectortype, $nodeelement);
+        $xpath = addslashes_js($element->getXpath());
+        $script = 'window.behatStored = window.behatStored || {};' . 'window.behatStored.focusTarget = document.evaluate("' . $xpath . '", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;';
+        $this->getSession()->getDriver()->executeScript($script);
+        $script = ' return (function() { return document.activeElement === window.behatStored.focusTarget; })(); ';
+        $targetisfocussed = $this->getSession()->evaluateScript($script);
+        if ($not == ' not') {
+            if ($targetisfocussed) {
+                throw new ExpectationException("$nodeelement $nodeselectortype is focused", $this->getSession());
+            }
+        } else {
+            if (!$targetisfocussed) {
+                throw new ExpectationException("$nodeelement $nodeselectortype is not focused", $this->getSession());
+            }
+        }
+    }
+
+    /**
+     * Manually press tab key.
+     *
+     * @When /^I press tab$/
+     * @throws DriverException
+     */
+    public function i_manually_press_tab() {
+        if (!$this->running_javascript()) {
+            throw new DriverException('Tab press step is not available with Javascript disabled');
+        }
+        $this->getSession()->getDriver()->getWebDriverSession()->activeElement()->postValue(['value' => [\WebDriver\Key::TAB]]);
+    }
+
+    /**
+     * Manually press shift-tab key.
+     *
+     * @When /^I press shift tab$/
+     * @throws DriverException
+     */
+    public function i_manually_press_shift_tab() {
+        if (!$this->running_javascript()) {
+            throw new DriverException('Shift tab press step is not available with Javascript disabled');
+        }
+        $this->getSession()->getDriver()->getWebDriverSession()->activeElement()->postValue(['value' => [\WebDriver\Key::SHIFT . \WebDriver\Key::TAB]]);
+    }
 }
