@@ -130,7 +130,11 @@ XPATH
         contains(concat(' ', normalize-space(@class), ' '), ' moodle-dialogue-hd ')
         ]) = %locator%] |
 .//div[contains(concat(' ', normalize-space(@class), ' '), ' yui-dialog ') and
-    normalize-space(descendant::div[@class='hd']) = %locator%]
+    normalize-space(descendant::div[@class='hd']) = %locator%] |
+.//div[contains(concat(' ', normalize-space(@class), ' '), ' modal-content ') and
+    normalize-space(descendant::h4[
+        contains(concat(' ', normalize-space(@class), ' '), ' modal-title ')
+        ]) = %locator%]
 XPATH
         , 'icon' => <<<XPATH
 .//*[contains(concat(' ', normalize-space(@class), ' '), ' icon ') and ( contains(normalize-space(@title), %locator%))]
