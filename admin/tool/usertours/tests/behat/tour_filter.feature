@@ -60,3 +60,20 @@ Feature: Apply tour filters to a tour
     And I am on site homepage
     And I follow "Course 1"
     And I should see "Welcome to your course tour."
+
+  @javascript
+  Scenario: Check user tours selector work with backdrop setting
+    Given I log in as "admin"
+    And I add a new user tour with:
+      | Name               | The user menu tour             |
+      | Description        | The user menu tour description |
+      | Apply to URL match | /my/%                          |
+      | Tour is enabled    | 1                              |
+      | Show with backdrop | 1                              |
+      | Theme              | All                            |
+    And I add steps to the "The user menu tour" tour:
+      | targettype | CSS selector               | Title   | Content                    |
+      | Selector   | .usermenu .dropdown-toggle | Welcome | Welcome to user menu tour. |
+    When I am on homepage
+    Then I should see "Welcome to user menu tour."
+    And The distance between ".usermenu .dropdown-toggle" element and ".tooltip-arrow" element must lower than "60" pixels

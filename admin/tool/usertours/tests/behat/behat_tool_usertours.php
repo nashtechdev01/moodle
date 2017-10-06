@@ -89,4 +89,40 @@ class behat_tool_usertours extends behat_base {
                 ])
             ]);
     }
+
+    /**
+     * Check distance between the given elements.
+     *
+     * @Then /^The distance between "(?P<from_element_string>(?:[^"]|\\")*)" element and "(?P<to_element_string>(?:[^"]|\\")*)" element must lower than "(?P<pixels_string>[0-9]+)" pixels$/
+     * @param string $fromnodeelement Element identifier
+     * @param string $tonodeelement Element identifier
+     * @param string $pixels Position in pixels
+     * @throws ExpectationException, ErrorException
+     */
+    public function the_distance_between_elements_should_lower_than_pixels($fromnodeelement, $tonodeelement, $pixels) {
+        if (!$this->running_javascript()) {
+            throw new ErrorException('Checking distance between elements requires JavaScript');
+        }
+
+        $script = <<<EOF
+            return (function() {
+                var pixels = parseInt($pixels);
+                var fromElementOffsetLeft = jQuery('$fromnodeelement').offset().left;
+                var toElementOffsetLeft = jQuery('$tonodeelement').offset().left;
+            
+                fromElementOffsetLeft = Math.round(fromElementOffsetLeft);
+                toElementOffsetLeft = Math.round(toElementOffsetLeft);
+                var diff = Math.abs(parseInt(toElementOffsetLeft) - parseInt(fromElementOffsetLeft));
+            
+                return diff <= pixels;
+            })();
+EOF;
+
+        $checkdistance = $this->getSession()->evaluateScript($script);
+
+        if (!$checkdistance) {
+            throw new \Behat\Mink\Exception\ExpectationException('The distance greater than "' . $pixels . '" pixels.',
+                    $this->getSession());
+        }
+    }
 }

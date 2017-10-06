@@ -16,8 +16,15 @@ span[data-flexitour="container"].orphan div[data-role="arrow"] {
 
 body div[data-flexitour="step-background-fader"],
 body div[data-flexitour="step-background"] {
-    position: absolute;
     background: inherit;
+}
+
+body div[data-flexitour="step-background-fader"] {
+    position: absolute;
+}
+
+body div[data-flexitour="step-background"] {
+    position: fixed;
 }
 
 div[data-flexitour="step-background-fader"],
