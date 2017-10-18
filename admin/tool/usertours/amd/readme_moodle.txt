@@ -15,3 +15,8 @@ Popper.js Instructions
 2. Copy /build/popper.js to amd/src/popper.js
 3. Update thirdpartylibs.xml
 4. Run `grunt amd`
+
+ Modifications:
+ * tour.js - MDL-60207 User tour should be closed when user touch/click outside it
+    These changes can be reverted once the following pull requests have been integrated upstream:
+    https://github.com/andrewnicols/flexitour/pull/2/commits/4ca7fd82b32c38662fd93dca798c018cdfbf041a

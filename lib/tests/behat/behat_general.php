@@ -1635,4 +1635,19 @@ class behat_general extends behat_base {
 
         throw new \Moodle\BehatExtension\Exception\SkippedException();
     }
+
+    /**
+     * Trigger click on node via javascript instead of actually clicking on it via pointer.
+     * This function resolves the issue of nested elements.
+     *
+     * @When /^I click on "(?P<element_string>(?:[^"]|\\")*)" "(?P<selector_string>[^"]*)" skipping visibility check$/
+     * @param string $element
+     * @param string $selectortype
+     */
+    public function i_click_on_skipping_visibility_check($element, $selectortype) {
+
+        // Gets the node based on the requested selector type and locator.
+        $node = $this->get_selected_node($selectortype, $element);
+        $this->js_trigger_click($node);
+    }
 }

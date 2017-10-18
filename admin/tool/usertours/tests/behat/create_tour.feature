@@ -79,3 +79,42 @@ Feature: Add a new user tour
     When I click on "Enable" "link" in the "My first tour" "table_row"
     And I am on homepage
     Then I should see "Welcome to your personal learning space. We'd like to give you a quick tour to show you some of the areas you may find helpful"
+
+  @javascript
+  Scenario: Click out to end tour with backdrop
+    Given I log in as "admin"
+    And I add a new user tour with:
+      | Name                | First tour    |
+      | Description         | My first tour |
+      | Apply to URL match  | /my/%         |
+      | Tour is enabled     | 1             |
+      | Theme               | Boost         |
+      | Show with backdrop  | 1             |
+    And I add steps to the "First tour" tour:
+      | targettype                  | Title             | Content                                    |
+      | Display in middle of page   | Welcome           | Welcome to your course tour with backdrop. |
+    And I am on homepage
+    And I should see "Welcome to your course tour with backdrop."
+    # Cannot use the normal ‘I click on’ here, because the pop-up gets in the way.
+    And I click on "div[data-flexitour='backdrop']" "css_element" skipping visibility check
+    Then I should not see "Welcome to your course tour with backdrop."
+    And I reload the page
+    And I should see "Welcome to your course tour with backdrop."
+
+  @javascript
+  Scenario: Click out to end tour without backdrop
+    Given I log in as "admin"
+    And I add a new user tour with:
+      | Name                | First tour    |
+      | Description         | My first tour |
+      | Apply to URL match  | /my/%         |
+      | Tour is enabled     | 1             |
+      | Theme               | Boost         |
+      | Show with backdrop  | 0             |
+    And I add steps to the "First tour" tour:
+      | targettype                  | Title             | Content                                       |
+      | Display in middle of page   | Welcome           | Welcome to your course tour without backdrop. |
+    And I am on homepage
+    And I should see "Welcome to your course tour without backdrop."
+    And I click on "Site home" "link"
+    Then I should not see "Welcome to your course tour without backdrop."
