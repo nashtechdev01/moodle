@@ -15,3 +15,8 @@ Popper.js Instructions
 2. Copy /build/popper.js to amd/src/popper.js
 3. Update thirdpartylibs.xml
 4. Run `grunt amd`
+
+Modifications:
+    * tour.js - MDL-60078 User tours accessibility: Tabbing should go back into the pop-up
+      These changes can be reverted once the following pull requests have been integrated upstream:
+      https://github.com/andrewnicols/flexitour/pull/6/commits/e1ac79b269bbfe196a16cefe70b50c18175b050b
