@@ -13,6 +13,10 @@ information provided here is intended especially for theme designer.
   is made possible by a new function core_renderer->activity_navigation().
 * Theme designers may now place the Reset tour on this page link where required by adding an empty
   container (e.g. <div class="tool_usertours-resettourcontainer"></div>) to their layouts.
+* The body tag has various browser-specific classes for those cases where some
+  browser-sniffing is unavoidable. This used not to recognised Microsoft Edge,
+  but now it does (class 'edge'). Also, both Safari and Chrome used to be
+  class 'safari', but now there are separate classes 'safari' and 'chrome'.
 
 === 3.3 ===
 
