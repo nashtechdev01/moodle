@@ -7,6 +7,10 @@ information provided here is intended especially for theme designer.
   setup for this module have been moved from core standard_head_html to the bootstrapbase
   renderer. If your theme needs this javascript you will need to ensure the bootstrap renderer
   is called, or require the JS yourself
+* The body tag has various browser-specific classes for those cases where some
+  browser-sniffing is unavoidable. This used not to recognised Microsoft Edge,
+  but now it does (class 'edge'). Also, both Safari and Chrome used to be
+  class 'safari', but now there are separate classes 'safari' and 'chrome'.
 
 === 3.2 ===
 
