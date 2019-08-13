@@ -110,7 +110,18 @@ define(['jquery', 'core/dragdrop', 'core/key_codes'], function($, dragDrop, keys
      * @param {int} height
      */
     DragDropToTextQuestion.prototype.setElementSize = function(element, width, height) {
-        $(element).width(width).height(height).css('lineHeight', height + 'px');
+        element = $(element);
+        var fontSize = parseFloat(element.css('font-size'));
+        // Calculate to set width, height and lineHeight in em,
+        // when text size is changed in the browser words should fit in their boxes.
+        width = width / fontSize;
+        height = height / fontSize;
+
+        element.css({
+            width: width + 'em',
+            height: height + 'em',
+            lineHeight: height + 'em'
+        });
     };
 
     /**
