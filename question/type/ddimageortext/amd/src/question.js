@@ -21,7 +21,8 @@
  * @copyright  2018 The Open University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-define(['jquery', 'core/dragdrop', 'core/key_codes'], function($, dragDrop, keys) {
+define(['jquery', 'core/dragdrop', 'core/key_codes', 'qtype_ddimageortext/jcanvas'],
+    function($, dragDrop, keys) {
 
     "use strict";
 
@@ -48,6 +49,7 @@ define(['jquery', 'core/dragdrop', 'core/key_codes'], function($, dragDrop, keys
             thisQ.waitForAllImagesToBeLoaded();
         });
         this.waitForAllImagesToBeLoaded();
+        this.cvDropBackground = $('#ddcv-dropbackground-' + containerId);
     }
 
     /**
@@ -367,6 +369,10 @@ define(['jquery', 'core/dragdrop', 'core/key_codes'], function($, dragDrop, keys
         if (!placed) {
             this.sendDragHome(drag);
         }
+        // Update canvas if anything has changed.
+        setTimeout(function() {
+            thisQ.renderCanvasDropBackground();
+        }, 200);
     };
 
     /**
@@ -675,6 +681,154 @@ define(['jquery', 'core/dragdrop', 'core/key_codes'], function($, dragDrop, keys
     };
 
     /**
+     * Init canvas and background.
+     */
+    DragDropOntoImageQuestion.prototype.initDropBackground = function() {
+        var bgImage = this.bgImage();
+        this.cvDropBackground.prop({
+            width: parseInt(bgImage.width()),
+            height: parseInt(bgImage.height()),
+        }).drawImage({
+            source: bgImage.attr('src'),
+            strokeStyle: bgImage.css('border'),
+            x: 0, y: 0,
+            width: parseInt(bgImage.width()),
+            height: parseInt(bgImage.height()),
+            fromCenter: false
+        });
+    };
+
+    /**
+     * To avoid dropbackground and dragdrop nodes display incorrectly when printing,
+     * they are render to canvas.
+     */
+    DragDropOntoImageQuestion.prototype.renderCanvasDropBackground = function() {
+        this.initDropBackground();
+        this.renderDropPlaces();
+        this.renderDraggedPlaces();
+        this.prepareUnplaceItems();
+    };
+
+    /**
+     * Render drop places in background image.
+     */
+    DragDropOntoImageQuestion.prototype.renderDropPlaces = function() {
+        var thisQ = this;
+        this.getRoot().find('.dropzones div').each(function(index, dropZone) {
+            var drop = $(dropZone);
+            // Calculate position.
+            var nodeInfo = thisQ.nodeInfo(drop);
+            thisQ.cvDropBackground.drawRect({
+                fillStyle: drop.css('background-color'),
+                strokeStyle: drop.css('border-color'),
+                opacity: drop.css('opacity'),
+                x: nodeInfo.x,
+                y: nodeInfo.y,
+                width: nodeInfo.width,
+                height: nodeInfo.height,
+                fromCenter: false
+            }).restoreCanvas();
+        });
+    };
+
+    /**
+     * Prepare unplace item before print.
+     */
+    DragDropOntoImageQuestion.prototype.prepareUnplaceItems = function() {
+        var thisQ = this;
+        this.getRoot().find('.ddarea .draghome').removeClass('printhide');
+        this.getRoot().find('.draghomes > div').each(function(index, dragGroup) {
+            // Separate group choices.
+            var groupNumber = thisQ.getClassnameNumericSuffix($(dragGroup), 'dragitemgroup');
+            if (groupNumber !== null) {
+                var choices = [];
+                thisQ.getRoot().find('.dragitems .drag.placed.group' + groupNumber).each(function(index, dragPlaced) {
+                    var drag = $(dragPlaced);
+                    var choice = parseInt(thisQ.getChoice(drag));
+                    choices.push(choice);
+                });
+                thisQ.getRoot().find('.draghomes .draghome.group' + groupNumber).each(function(index, dragHome) {
+                    var drag = $(dragHome);
+                    var choice = parseInt(thisQ.getChoice(drag));
+                    if ($.inArray(choice, choices) >= 0) {
+                        drag.addClass('printhide').addClass('group' + groupNumber);
+                    }
+                });
+            }
+        });
+    };
+
+    /**
+     * Render items that put on the background
+     */
+    DragDropOntoImageQuestion.prototype.renderDraggedPlaces = function() {
+        var thisQ = this;
+        var dragPlaces = this.getRoot().find('.dragitems .drag.placed');
+        var fontSize = parseInt(dragPlaces.css('font-size'));
+
+        dragPlaces.each(function(index, dragPlaced) {
+            var drag = $(dragPlaced);
+            // Calculate position.
+            var nodeInfo = thisQ.nodeInfo(drag);
+            thisQ.cvDropBackground.drawRect({
+                fillStyle: drag.css('background-color'),
+                strokeStyle: drag.css('border-color'),
+                x: nodeInfo.x,
+                y: nodeInfo.y,
+                width: nodeInfo.width,
+                height: nodeInfo.height,
+                fromCenter: false
+            }).restoreCanvas();
+            // Drop text.
+            var text = drag.html();
+            if (text.length > 0) {
+                var texts = text.replace(/<br[^>]*>/gi, '<br>').split('<br>');
+                var y = nodeInfo.y + fontSize;
+                for (var i = 0; i < texts.length; i++) {
+                    thisQ.cvDropBackground.drawText({
+                        fillStyle: drag.css('color'),
+                        x: nodeInfo.x + (nodeInfo.width / 2),
+                        y: y,
+                        fontSize: fontSize,
+                        fontFamily: drag.css('font-family'),
+                        text: texts[i],
+                        fromCenter: true
+                    });
+                    y += fontSize;
+                }
+            } else {
+                // Drop image.
+                thisQ.cvDropBackground.drawImage({
+                    source: drag.attr('src'),
+                    x: nodeInfo.x + parseInt(fontSize / 2),
+                    y: nodeInfo.y + parseInt(fontSize / 2),
+                    width: parseInt(drag.width()),
+                    height: parseInt(drag.height()),
+                    fromCenter: false
+                });
+            }
+        });
+    };
+
+    /**
+     * Calculate width, height, x, y for dragdrop node
+     *
+     * @param {jQuery} node
+     * @returns {{x: number, width: number, y: number, height: number}}
+     */
+    DragDropOntoImageQuestion.prototype.nodeInfo = function(node) {
+        var bgImage = this.bgImage(),
+            bgPosition = bgImage.offset();
+        var nodePos = node.offset();
+        return {
+            x: parseInt(nodePos.left) - parseInt(bgPosition.left),
+            y: parseInt(nodePos.top) - parseInt(bgPosition.top),
+            width: parseInt(node.outerWidth()),
+            height: parseInt(node.outerHeight())
+        };
+    };
+
+    /**
      * Singleton object that handles all the DragDropOntoImageQuestions
      * on the page, and deals with event dispatching.
      * @type {Object}
@@ -720,6 +874,18 @@ define(['jquery', 'core/dragdrop', 'core/key_codes'], function($, dragDrop, keys
                     questionManager.handleKeyPress);
             $(window).on('resize', questionManager.handleWindowResize);
             setTimeout(questionManager.fixLayoutIfThingsMoved, 100);
+            setTimeout(questionManager.intCanvasesDropBackground, 100);
+        },
+
+        /**
+         * Initialise canvases drop background when page loaded.
+         */
+        intCanvasesDropBackground: function() {
+            for (var containerId in questionManager.questions) {
+                if (questionManager.questions.hasOwnProperty(containerId)) {
+                    questionManager.questions[containerId].renderCanvasDropBackground();
+                }
+            }
         },
 
         /**

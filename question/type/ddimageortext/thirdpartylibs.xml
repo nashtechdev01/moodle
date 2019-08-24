@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<libraries>
+  <library>
+    <location>js/jcanvas.min.js</location>
+    <name>jCanvas</name>
+    <license>MIT</license>
+    <version>v21.0.1</version>
+    <licenseversion></licenseversion>
+  </library>
+</libraries>

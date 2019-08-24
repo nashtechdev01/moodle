@@ -66,9 +66,11 @@ class qtype_ddtoimage_renderer_base extends qtype_with_combined_feedback_rendere
         $img = html_writer::empty_tag('img', array(
                 'src' => $bgimage, 'class' => 'dropbackground',
                 'alt' => get_string('dropbackground', 'qtype_ddimageortext')));
+        $cvdropbackground = html_writer::tag('canvas', '', ['id' => 'ddcv-dropbackground-' .
+                $qa->get_outer_question_div_unique_id()]);
         $dropzones = html_writer::tag('div', '', array('class' => 'dropzones'));
 
-        $droparea = html_writer::tag('div', $img . $dropzones, array('class' => 'droparea'));
+        $droparea = html_writer::tag('div', $img . $cvdropbackground . $dropzones, array('class' => 'droparea'));
 
         $dragimagehomes = '';
         foreach ($question->choices as $groupno => $group) {
