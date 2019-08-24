@@ -155,3 +155,30 @@ body#page-question-type-ddimageortext div[id^=fitem_id_][id*=draglabel_] {
     border: 1px solid #bbb;
     border-top: 0;
 }
+
+@media screen {
+    .que.ddimageortext .droparea canvas {
+        position: fixed;
+        margin-left: 99999px;
+    }
+}
+
+@media print {
+    .que.ddimageortext .droparea img,
+    .que.ddimageortext .drag.placed,
+    .que.ddimageortext .dropzone {
+        display: none;
+    }
+    .que.ddimageortext .droparea canvas {
+        border: 1px solid #000;
+        position: relative;
+        margin: 0 auto;
+    }
+    .que.ddimageortext .draghome {
+        visibility: visible;
+    }
+    .que.ddimageortext .dragitems,
+    .que.ddimageortext .draghome.printhide {
+        visibility: hidden;
+    }
+}
